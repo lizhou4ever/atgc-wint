@@ -14,6 +14,7 @@ proc SeqExter {argv} {
 	
 	global initial_time
 	global sleep_time
+	global live_string
 	
 	set input_file    [lindex $argv 0]
 	set file_out_base [lindex $argv 1]
@@ -25,6 +26,10 @@ proc SeqExter {argv} {
 	Open_Files $input_file $file_out_base
 	
 	Read_Input_File $mod_value
+	
+	Read_StdIn_Data
+	
+	Check_StdIn_Data
 	
 	Close_Files
 	
@@ -117,6 +122,35 @@ proc Close_Files { } {
 	close $file_out0
 	close $file_out1
 	
+}
+
+proc Read_StdIn_Data { } {
+	
+	global live_string
+	
+	puts ""
+	puts " Enter Yes or No\: "
+	puts ""
+	gets stdin live_string
+	
+}
+
+proc Check_StdIn_Data { } {
+	
+	global live_string
+	
+	while { $live_string != "Yes" && $live_string != "No"} {
+		puts " Ops! "
+		Read_StdIn_Data
+	
+	if { $live_string == "Yes" } {
+		puts " Dah! "
+	}
+	if { $live_string == "No" } {
+		puts " Net! "
+	}
+	
+	}
 }
 
 proc Print_Final_Message { } {
