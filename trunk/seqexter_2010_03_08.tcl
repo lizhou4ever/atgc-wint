@@ -23,14 +23,37 @@
 proc Set_Global_Parameters { } {
 	
 	global initial_time
-	global sleep_time
-	global live_string
-	global query_string
-	
-	global basic_data_array
-	global max_array_item
+	global sleep_time			; # time interval for debugging purpose
+	global live_string			; # inpuit stdin
+	global query_string			; # query string
+	global query_array			; # array with search results
+	global upper_case			; # convert text input data to upper case
+	global valid_commands_list	; # list of commands for interactive dialog
+	global valid_commands_array	; # array of commands for interactive dialog
+	global basic_data_array		; # array with strings from input file
+	global max_array_item		; # size of the array with strings from input file
 	
 	set query_string ""
+	set upper_case "TRUE"
+	# set upper_case "FALSE"
+	
+}
+
+proc Set_Dialog_Commands { } {
+	
+	global valid_commands_list
+	global valid_commands_array
+	
+	set valid_commands_list { "Query" "Proc_01" "Proc_02" "Exit" }
+	# set valid_commands_list { "Query" "Proc_01" "Proc_02" "Proc_03" "Proc_04" "Proc_05" "Exit" }
+	
+	set valid_commands_array(Query)    " Input Query String "
+	set valid_commands_array(Proc_01)  " Run Procedure 01 "
+	set valid_commands_array(Proc_02)  " Run Procedure 02 "
+	# set valid_commands_array(Proc_03)  " Run Procedure 03 "
+	# set valid_commands_array(Proc_04)  " Run Procedure 04 "
+	# set valid_commands_array(Proc_05)  " Run Procedure 05 "
+	set valid_commands_array(Exit)     " Exit Program "
 	
 }
 
@@ -44,6 +67,8 @@ proc SeqExter {argv} {
 	set sleep_time    [lindex $argv 3]
 	
 	Set_Global_Parameters
+	
+	Set_Dialog_Commands
 	
 	Open_Files $input_file $file_out_base
 	
@@ -131,11 +156,12 @@ proc Read_Input_File { mod_value } {
 	while {[gets $file_in_1 current_line] >= 0} {
 		
 		incr l
-		######################################################################
-		### Exception 01 - Read DNA strings only from FASTA or FASTQ files ###
+		############################################################################
+		##  Exception 01 - Read DNA strings only skipping FASTA or FASTQ headers  ##
 		set line_exception "NO_EXCEPTION"
+		## Comment line below to read all data from input file without exceptions ##
 		set line_exception [Check_Line_for_Exception_01 $current_line]
-		#######################################################################
+		#############################################################################
 		
 		if { $line_exception == "NO_EXCEPTION" } {
 			
@@ -148,6 +174,8 @@ proc Read_Input_File { mod_value } {
 		}
 	}
 	set current_time [Check_Current_Time]
+	set log_message "    Read Input File - Done    "
+	Print_Log_Message $log_message
 	set log_message " $n items processed out of $l  |  Init Time: $initial_time  Current Time: $current_time "
 	Print_Log_Message $log_message
 }
@@ -170,7 +198,11 @@ proc Create_Basic_Data_Array { n current_line } {
 	
 	global basic_data_array
 	global max_array_item
+	global upper_case
 	
+	if { $upper_case == "TRUE" } {
+		set current_line [string toupper $current_line]
+	}
 	set basic_data_array($n) $current_line
 	set max_array_item $n
 	
@@ -178,14 +210,14 @@ proc Create_Basic_Data_Array { n current_line } {
 
 proc Read_StdIn_Data { } {
 	
+	global valid_commands_list
+	global valid_commands_array
 	global live_string
 	
 	puts ""
-	puts " Enter Words/Commands \'Query\'\, \'Do_01\'\, \'Do_02\' or \'Exit\'\: "
-	puts " Query - go to query string dialog   "
-	puts " Do_01 will start string analysis 01 "
-	puts " Do_02 will start string analysis 02 "
-	puts " Exit will exit                      "
+	foreach item $valid_commands_list {
+		puts "  type  $item  for  $valid_commands_array($item)  "
+	}
 	puts ""
 	gets stdin live_string
 	
@@ -195,26 +227,30 @@ proc Read_StdIn_Data { } {
 
 proc Check_StdIn_Data { } {
 	
+	global valid_commands_list
+	global valid_commands_array
 	global live_string
 	
-	while { $live_string != "Exit" && $live_string != "Do_01" && $live_string != "Do_02" && $live_string != "Query"} {
+	set is_it_valid [lsearch -exact $valid_commands_list $live_string]
 	
-		puts " Ops! "
+	while { $is_it_valid < 0 } {
+		puts " Command not valid "
 		Read_StdIn_Data
 	}
 	if { $live_string == "Exit" } {
 		puts " Exit "
+		break
 	}
 	if { $live_string == "Query" } {
-		puts "Query String Dialog"
+		puts " Query String Dialog "
 		Read_Query_String
 	}
-	if { $live_string == "Do_01" } {
-		puts "Do_01"
+	if { $live_string == "Proc_01" } {
+		puts " Proc_01 "
 		Run_String_Analysis_01
 	}
-	if { $live_string == "Do_02" } {
-		puts "Do_02"
+	if { $live_string == "Proc_02" } {
+		puts " Proc_02 "
 		Run_String_Analysis_02
 	}
 }
@@ -237,7 +273,10 @@ proc Read_Query_String { } {
 	while { $next_step != "OK" } {
 		Read_Query_String
 	}
-	Read_StdIn_Data
+	if { $next_step == "OK" } {
+		Read_StdIn_Data
+		break
+	}
 }
 
 proc Check_Line_for_Exception_01 { current_line } {
@@ -336,15 +375,18 @@ proc Print_Final_Message { } {
 	Print_Log_Message $log_message
 	puts "                                  "
 	puts "  +----------------------------+  "
-	puts "  |  Well Done - Enjoy Output  |  "
+	puts "  |    -=<*  THE  END  *>=-    |  "
 	puts "  +----------------------------+  "
 	puts "                                  "
 	
 }
 
 if {$argc != 4} {
-	puts "Program usage:"
-	puts "Input_File,  Output_File,  Mod_Value, Sleep_Time"
+	puts ""
+	puts "Program usage:                                           "
+	puts "         Input_File,  Output_File,  Mod_Value, Sleep_Time"
+	puts "for example: my_input   my_output   100000   1000        "
+	puts ""
 } else {
 	SeqExter $argv
 }
