@@ -22,7 +22,8 @@
 
 proc Set_Global_Parameters { } {
 	
-	global initial_time
+	global interactive_mode		; # interactive or command line query input
+	global initial_time			; # program start time
 	global sleep_time			; # time interval for debugging purpose
 	global live_string			; # inpuit stdin
 	global query_string			; # query string
@@ -33,7 +34,8 @@ proc Set_Global_Parameters { } {
 	global basic_data_array		; # array with strings from input file
 	global max_array_item		; # size of the array with strings from input file
 	
-	set query_string ""
+	set interactive_mode "TRUE"
+	# set interactive_mode "FALSE"
 	set upper_case "TRUE"
 	# set upper_case "FALSE"
 	
@@ -60,11 +62,23 @@ proc Set_Dialog_Commands { } {
 proc SeqExter {argv} {
 	
 	global sleep_time
+	global query_string
 	
 	set input_file    [lindex $argv 0]
 	set file_out_base [lindex $argv 1]
-	set mod_value     [lindex $argv 2]
-	set sleep_time    [lindex $argv 3]
+	set query_type    [lindex $argv 2]
+	set query_input   [lindex $argv 3]
+	set mod_value     [lindex $argv 4]
+	set sleep_time    [lindex $argv 5]
+	
+	if { $query_type == "STRING"} {
+		set query_string $query_input
+		set query_file   "___none___"
+	}
+	if { $query_type == "FILE"} {
+		set query_file   $query_input
+		set query_string "___none___"
+	}
 	
 	Set_Global_Parameters
 	
@@ -381,13 +395,23 @@ proc Print_Final_Message { } {
 	
 }
 
-if {$argc != 4} {
+if {$argc != 6} {
 	puts ""
-	puts "Program usage:                                           "
-	puts "         Input_File,  Output_File,  Mod_Value, Sleep_Time"
-	puts "for example: my_input   my_output   100000   1000        "
-	puts ""
+	puts "Program usage:                                                                           "
+	puts "Input_File,  Output_File,  Query_Input_Type,  String_or_FileName,  Mod_Value,  Sleep_Time"
+	puts "example for single string query:                                                         "
+	puts "my_input   my_output   STRING   ATGCATGC   10000   1000                                  "
+	puts "example for multiple query strings in file:                                              "
+	puts "my_input   my_output    FILE   query_file  10000   1000                                  "
+	puts "                                                                                         "
 } else {
+	set query_type [lindex $argv 2]
+	if { $query_type != "STRING" && $query_type != "FILE" } {
+		puts "                                               "
+		puts "    Query_Input_Type must be STRING or FILE    "
+		puts "                                               "
+		exit
+	}
 	SeqExter $argv
 }
 
