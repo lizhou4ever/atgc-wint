@@ -20,22 +20,37 @@
 #                                                         #
 ###########################################################
 
-proc Set_Global_Parameters { } {
+proc Set_Global_Parameters { query_type query_input } {
 	
+	global basic_data_array		; # array with strings from input file
 	global interactive_mode		; # interactive or command line query input
 	global initial_time			; # program start time
-	global sleep_time			; # time interval for debugging purpose
 	global live_string			; # inpuit stdin
+	global loop_status			; # multiple or single iteration
+	global max_array_item		; # size of the array with strings from input file
+	global mod_value			; # delay in next step in milliseconds to read debugging messages
+	global proc_id				; # procedure ID
 	global query_string			; # query string
 	global query_array			; # array with search results
-	global upper_case			; # convert text input data to upper case
+	global sleep_time			; # time interval for debugging purpose
 	global valid_commands_list	; # list of commands for interactive dialog
 	global valid_commands_array	; # array of commands for interactive dialog
-	global basic_data_array		; # array with strings from input file
-	global max_array_item		; # size of the array with strings from input file
+	global upper_case			; # convert text input data to upper case
 	
-	set interactive_mode "TRUE"
-	# set interactive_mode "FALSE"
+	if { $query_type == "STRING"} {
+		set query_string $query_input
+		set query_file   "___none___"
+	}
+	if { $query_type == "FILE"} {
+		set query_file   $query_input
+		set query_string "___none___"
+	}
+	
+	set interactive_mode "FALSE"
+	if { $query_input == "_STDIN_" } {
+		set interactive_mode "TRUE"
+	}
+	
 	set upper_case "TRUE"
 	# set upper_case "FALSE"
 	
@@ -61,8 +76,10 @@ proc Set_Dialog_Commands { } {
 
 proc SeqExter {argv} {
 	
+	global mod_value
 	global sleep_time
-	global query_string
+	global proc_id
+	global loop_status
 	
 	set input_file    [lindex $argv 0]
 	set file_out_base [lindex $argv 1]
@@ -70,17 +87,10 @@ proc SeqExter {argv} {
 	set query_input   [lindex $argv 3]
 	set mod_value     [lindex $argv 4]
 	set sleep_time    [lindex $argv 5]
+	set proc_id       [lindex $argv 6]
+	set loop_status   [lindex $argv 7]
 	
-	if { $query_type == "STRING"} {
-		set query_string $query_input
-		set query_file   "___none___"
-	}
-	if { $query_type == "FILE"} {
-		set query_file   $query_input
-		set query_string "___none___"
-	}
-	
-	Set_Global_Parameters
+	Set_Global_Parameters $query_type $query_input
 	
 	Set_Dialog_Commands
 	
@@ -88,7 +98,7 @@ proc SeqExter {argv} {
 	
 	Set_Intial_Time
 	
-	Read_Input_File $mod_value
+	Read_Input_File
 	
 	Read_StdIn_Data
 	
@@ -159,10 +169,11 @@ proc Open_Files { input_file file_out_base } {
 	
 }
 
-proc Read_Input_File { mod_value } {
+proc Read_Input_File { } {
 	
 	global file_in_1
 	global initial_time
+	global mod_value
 	
 	set l 0 
 	set n 0 
@@ -395,15 +406,21 @@ proc Print_Final_Message { } {
 	
 }
 
-if {$argc != 6} {
-	puts ""
-	puts "Program usage:                                                                           "
-	puts "Input_File,  Output_File,  Query_Input_Type,  String_or_FileName,  Mod_Value,  Sleep_Time"
-	puts "example for single string query:                                                         "
-	puts "my_input   my_output   STRING   ATGCATGC   10000   1000                                  "
-	puts "example for multiple query strings in file:                                              "
-	puts "my_input   my_output    FILE   query_file  10000   1000                                  "
-	puts "                                                                                         "
+if {$argc != 8} {
+	puts "                                                                                      "
+	puts "Program usage:                                                                        "
+	puts "Input_File\[0\],  Output_File\[1\],  Query_Input_Type\[2\],  String_or_FileName\[3\], "
+	puts "   Mod_Val\[4\],  Sleep_Interval\[5\],  Procedure_ID\[6\],  Number_of_Iterations\[7\] "
+	puts "                                                                                      "
+	puts "example to run the program in the interactive mode:                                   "
+	puts "my_input   my_output   STRING   _STDIN_    10000   1000   PROC_01   LOOP_SINGLE       "
+	puts "                                                                                      "
+	puts "example for the single string query:                                                  "
+	puts "my_input   my_output   STRING   ATGCATGC   10000   1000   PROC_01   LOOP_NESTED       "
+	puts "                                                                                      "
+	puts "example for multiple query strings in file:                                           "
+	puts "my_input   my_output    FILE   query_file  10000   1000   PROC_01   LOOP_SINGLE       "
+	puts "                                                                                      "
 } else {
 	set query_type [lindex $argv 2]
 	if { $query_type != "STRING" && $query_type != "FILE" } {
@@ -412,6 +429,21 @@ if {$argc != 6} {
 		puts "                                               "
 		exit
 	}
+	set proc_id [lindex $argv 6]
+	if { $proc_id != "PROC_01" && $proc_id != "PROC_02" } {
+		puts "                                               "
+		puts "    Procedure_ID must be PROC_01 or PROC_02    "
+		puts "                                               "
+		exit
+	}
+	set loop_status [lindex $argv 7]
+	if { $loop_status != "LOOP_SINGLE" && $loop_status != "LOOP_NESTED" } {
+		puts "                                                         "
+		puts " Number_of_Iterations must be LOOP_SINGLE or LOOP_NESTED "
+		puts "                                                         "
+		exit
+	}
+	
 	SeqExter $argv
 }
 
