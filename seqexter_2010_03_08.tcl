@@ -20,7 +20,7 @@
 #                                                         #
 ###########################################################
 
-proc Set_Global_Parameters { query_type query_input } {
+proc Set_Global_Parameters { query_input } {
 	
 	global basic_data_array		; # array with strings from input file
 	global interactive_mode		; # interactive or command line query input
@@ -31,6 +31,7 @@ proc Set_Global_Parameters { query_type query_input } {
 	global mod_value			; # delay in next step in milliseconds to read debugging messages
 	global proc_id				; # procedure ID
 	global query_string			; # query string
+	global query_type			; # query in file or stdin
 	global query_array			; # array with search results
 	global sleep_time			; # time interval for debugging purpose
 	global valid_commands_list	; # list of commands for interactive dialog
@@ -74,12 +75,29 @@ proc Set_Dialog_Commands { } {
 	
 }
 
+proc Run_Selected_Proc { } {
+	
+	global proc_id
+	
+	if { $proc_id == "PROC_01" } {
+		Run_Proc_01
+	}
+	
+	if { $proc_id == "PROC_02" } {
+		Run_Proc_02
+	}
+	
+}
+
 proc SeqExter {argv} {
 	
+	global query_type
 	global mod_value
 	global sleep_time
 	global proc_id
 	global loop_status
+	global proc_id
+	global interactive_mode
 	
 	set input_file    [lindex $argv 0]
 	set file_out_base [lindex $argv 1]
@@ -90,9 +108,7 @@ proc SeqExter {argv} {
 	set proc_id       [lindex $argv 6]
 	set loop_status   [lindex $argv 7]
 	
-	Set_Global_Parameters $query_type $query_input
-	
-	Set_Dialog_Commands
+	Set_Global_Parameters $query_input
 	
 	Open_Files $input_file $file_out_base
 	
@@ -100,9 +116,14 @@ proc SeqExter {argv} {
 	
 	Read_Input_File
 	
-	Read_StdIn_Data
+	if { $interactive_mode == "TRUE" } {
+		Set_Dialog_Commands
+		Read_StdIn_Data
+	}
 	
-	### Check_StdIn_Data
+	if { $interactive_mode == "FALSE" } {
+		Run_Selected_Proc
+	}
 	
 	Print_Final_Message
 	
@@ -174,6 +195,7 @@ proc Read_Input_File { } {
 	global file_in_1
 	global initial_time
 	global mod_value
+	global upper_case
 	
 	set l 0 
 	set n 0 
@@ -182,7 +204,7 @@ proc Read_Input_File { } {
 		
 		incr l
 		############################################################################
-		##  Exception 01 - Read DNA strings only skipping FASTA or FASTQ headers  ##
+		##  Exception 01 - Read DNA strings only, skipping FASTA or FASTQ headers ##
 		set line_exception "NO_EXCEPTION"
 		## Comment line below to read all data from input file without exceptions ##
 		set line_exception [Check_Line_for_Exception_01 $current_line]
@@ -194,7 +216,12 @@ proc Read_Input_File { } {
 			
 			Check_Mod_Status $l $n $mod_value
 			
-			Create_Basic_Data_Array $n $current_line
+			set current_data $current_line
+			if { $upper_case == "TRUE" } {
+				set current_data [string toupper $current_data]
+			}
+			
+			Create_Basic_Data_Array $n $current_data
 			
 		}
 	}
@@ -219,16 +246,12 @@ proc Check_Mod_Status { l n mod_value } {
 	
 }
 
-proc Create_Basic_Data_Array { n current_line } {
+proc Create_Basic_Data_Array { n current_data } {
 	
 	global basic_data_array
 	global max_array_item
-	global upper_case
 	
-	if { $upper_case == "TRUE" } {
-		set current_line [string toupper $current_line]
-	}
-	set basic_data_array($n) $current_line
+	set basic_data_array($n) $current_data
 	set max_array_item $n
 	
 }
@@ -258,25 +281,22 @@ proc Check_StdIn_Data { } {
 	
 	set is_it_valid [lsearch -exact $valid_commands_list $live_string]
 	
-	while { $is_it_valid < 0 } {
-		puts " Command not valid "
-		Read_StdIn_Data
-	}
 	if { $live_string == "Exit" } {
 		puts " Exit "
-		break
-	}
-	if { $live_string == "Query" } {
+		Print_Final_Message
+		exit
+	} elseif { $live_string == "Query" } {
 		puts " Query String Dialog "
 		Read_Query_String
-	}
-	if { $live_string == "Proc_01" } {
+	} elseif { $live_string == "Proc_01" } {
 		puts " Proc_01 "
 		Run_String_Analysis_01
-	}
-	if { $live_string == "Proc_02" } {
+	} elseif { $live_string == "Proc_02" } {
 		puts " Proc_02 "
 		Run_String_Analysis_02
+	} else {
+		puts " Command not valid "
+		Read_StdIn_Data
 	}
 }
 
@@ -297,6 +317,7 @@ proc Read_Query_String { } {
 	gets stdin next_step
 	while { $next_step != "OK" } {
 		Read_Query_String
+		break
 	}
 	if { $next_step == "OK" } {
 		Read_StdIn_Data
@@ -321,8 +342,13 @@ proc Check_Line_for_Exception_01 { current_line } {
 	return $line_exception
 }
 
+proc Run_Proc_01 { } {
+	Run_String_Analysis_01
+}
+
 proc Run_String_Analysis_01 { } {
 	
+	global interactive_mode
 	global basic_data_array
 	global max_array_item
 	global query_string
@@ -330,6 +356,7 @@ proc Run_String_Analysis_01 { } {
 	
 	if { $query_string == "" } {
 		Read_Query_String
+		break
 	}
 	
 	set log_message " String Analysis 01 "
@@ -350,12 +377,21 @@ proc Run_String_Analysis_01 { } {
 		incr i
 	}
 	after $sleep_time
-	Read_StdIn_Data
 	
+	if { $interactive_mode == "TRUE" } {
+		Read_StdIn_Data
+		break
+	}
+	
+}
+
+proc Run_Proc_01 { } {
+	Run_String_Analysis_01
 }
 
 proc Run_String_Analysis_02 { } {
 	
+	global interactive_mode
 	global basic_data_array
 	global max_array_item
 	global sleep_time
@@ -369,7 +405,11 @@ proc Run_String_Analysis_02 { } {
 	set live_string ""
 	
 	after $sleep_time
-	Read_StdIn_Data
+	
+	if { $interactive_mode == "TRUE" } {
+		Read_StdIn_Data
+		break
+	}
 	
 }
 
