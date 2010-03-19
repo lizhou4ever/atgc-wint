@@ -28,11 +28,13 @@ proc Set_Global_Parameters { query_input } {
 	global live_string			; # inpuit stdin
 	global loop_status			; # multiple or single iteration
 	global max_array_item		; # size of the array with strings from input file
+	global max_query_item		; # size of the array with query strings
 	global mod_value			; # delay in next step in milliseconds to read debugging messages
 	global proc_id				; # procedure ID
+	global query_file			; # file with query strings
 	global query_string			; # query string
 	global query_type			; # query in file or stdin
-	global query_array			; # array with search results
+	global query_array			; # array with multiple queries form query input file
 	global sleep_time			; # time interval for debugging purpose
 	global valid_commands_list	; # list of commands for interactive dialog
 	global valid_commands_array	; # array of commands for interactive dialog
@@ -44,12 +46,14 @@ proc Set_Global_Parameters { query_input } {
 	}
 	if { $query_type == "FILE"} {
 		set query_file   $query_input
-		set query_string "___none___"
+		# set query_string "___none___"
+		set query_string ""
 	}
 	
 	set interactive_mode "FALSE"
 	if { $query_input == "_STDIN_" } {
 		set interactive_mode "TRUE"
+		set query_file   "___none___"
 	}
 	
 	set upper_case "TRUE"
@@ -89,15 +93,37 @@ proc Run_Selected_Proc { } {
 	
 }
 
+proc Run_Selected_Proc_Batch { } {
+	
+	global proc_id
+	global query_array
+	global query_string
+	global max_query_item
+	
+	set i 1
+	while { $i <= $max_query_item } {
+		set query_string $query_array($i)
+		if { $proc_id == "PROC_01" } {
+			Run_Proc_01
+		}
+		
+		if { $proc_id == "PROC_02" } {
+			Run_Proc_02
+		}
+		incr i
+	}
+	
+}
+
 proc SeqExter {argv} {
 	
-	global query_type
-	global mod_value
-	global sleep_time
-	global proc_id
-	global loop_status
-	global proc_id
 	global interactive_mode
+	global loop_status
+	global mod_value
+	global proc_id
+	global query_type
+	global query_file
+	global sleep_time
 	
 	set input_file    [lindex $argv 0]
 	set file_out_base [lindex $argv 1]
@@ -116,13 +142,18 @@ proc SeqExter {argv} {
 	
 	Read_Input_File
 	
-	if { $interactive_mode == "TRUE" } {
+	if { $interactive_mode == "TRUE" && $query_file == "___none___" } {
 		Set_Dialog_Commands
 		Read_StdIn_Data
 	}
 	
-	if { $interactive_mode == "FALSE" } {
+	if { $interactive_mode == "FALSE" && $query_file == "___none___" } {
 		Run_Selected_Proc
+	}
+	
+	if { $interactive_mode == "FALSE" && $query_file != "___none___" } {
+		Read_Query_File
+		Run_Selected_Proc_Batch
 	}
 	
 	Print_Final_Message
@@ -175,11 +206,41 @@ proc Check_Current_Time { } {
 	
 }
 
+proc Read_Query_File { } {
+	
+	global query_file	; # query file name
+	global file_in_2	; # query file channel
+	
+	set file_in_2 [open $query_file  "r"]
+	
+	set q 0 
+	while {[gets $file_in_2 current_line] >= 0} {
+		incr q
+		set current_query $current_line
+		Create_Query_Data_Array $q $current_query
+	}
+	close $file_in_2
+	
+}
+
+proc Create_Query_Data_Array { q current_query } {
+	
+	global query_array
+	global max_query_item
+	
+	set query_array($q) $current_query
+	set max_query_item $q
+	
+	set log_message " $q query strings processed "
+	Print_Log_Message $log_message
+	
+}
+
 proc Open_Files { input_file file_out_base } {
 	
-	global file_in_1	; # Input File
-	global file_out0	; # Log File 
-	global file_out1	; # Output File 1
+	global file_in_1	; # input file channel
+	global file_out0	; # log file channel
+	global file_out1	; # output file 1
 	
 	set file_name_0 $file_out_base\.Log
 	set file_name_1 $file_out_base\.Out
@@ -385,8 +446,8 @@ proc Run_String_Analysis_01 { } {
 	
 }
 
-proc Run_Proc_01 { } {
-	Run_String_Analysis_01
+proc Run_Proc_02 { } {
+	Run_String_Analysis_02
 }
 
 proc Run_String_Analysis_02 { } {
@@ -459,7 +520,7 @@ if {$argc != 8} {
 	puts "my_input   my_output   STRING   ATGCATGC   10000   1000   PROC_01   LOOP_NESTED       "
 	puts "                                                                                      "
 	puts "example for multiple query strings in file:                                           "
-	puts "my_input   my_output    FILE   query_file  10000   1000   PROC_01   LOOP_SINGLE       "
+	puts "my_input   my_output    FILE    my_query   10000   1000   PROC_01   LOOP_SINGLE       "
 	puts "                                                                                      "
 } else {
 	set query_type [lindex $argv 2]
