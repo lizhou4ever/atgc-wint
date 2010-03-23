@@ -23,6 +23,7 @@
 proc Set_Global_Parameters { query_input } {
 	
 	global basic_data_array		; # array with strings from input file
+	global dna_string_direction	; # direction of DNA string - FORWARD or REVERSE
 	global interactive_mode		; # interactive or command line query input
 	global initial_time			; # program start time
 	global live_string			; # inpuit stdin
@@ -35,6 +36,7 @@ proc Set_Global_Parameters { query_input } {
 	global query_string			; # query string
 	global query_type			; # query in file or stdin
 	global query_array			; # array with multiple queries form query input file
+	global reverse_compl		; # reverse-complement DNA string conversion
 	global sleep_time			; # time interval for debugging purpose
 	global valid_commands_list	; # list of commands for interactive dialog
 	global valid_commands_array	; # array of commands for interactive dialog
@@ -58,6 +60,9 @@ proc Set_Global_Parameters { query_input } {
 	
 	set upper_case "TRUE"
 	# set upper_case "FALSE"
+	
+	set reverse_compl "TRUE"
+	# set reverse_compl "FALSE"
 	
 }
 
@@ -100,7 +105,7 @@ proc Run_Selected_Proc_Batch { } {
 	global query_string
 	global max_query_item
 	
-	set i 1
+	set i 1 
 	while { $i <= $max_query_item } {
 		set query_string $query_array($i)
 		if { $proc_id == "PROC_01" } {
@@ -138,7 +143,7 @@ proc SeqExter {argv} {
 	
 	Open_Files $input_file $file_out_base
 	
-	Set_Intial_Time
+	Set_Initial_Time
 	
 	Read_Input_File
 	
@@ -180,8 +185,8 @@ proc Print_Query_Data_Log  { query_data_log } {
 	
 }
 
-proc Set_Intial_Time { } {
-
+proc Set_Initial_Time { } {
+	
 	global initial_time
 	global sleep_time
 	
@@ -404,11 +409,45 @@ proc Check_Line_for_Exception_01 { current_line } {
 }
 
 proc Run_Proc_01 { } {
-	Run_String_Analysis_01
+	
+	global reverse_compl
+	global dna_string_direction
+	
+	if { $reverse_compl == "FALSE" } {
+		set dna_string_direction "FRW"
+		Run_String_Analysis_01
+	}
+	
+	if { $reverse_compl == "TRUE" } {
+		set dna_string_direction "FRW"
+		Run_String_Analysis_01			; # First Round of Search - FORWARD DNA string
+		Reverse_Complement_String
+		set dna_string_direction "REV"
+		Run_String_Analysis_01			; # Second Round of Search REVERSE DNA string
+	}
+	
+}
+
+proc Reverse_Complement_String { } {
+	
+	global query_string
+	
+	### set rev_query_string [string reverse $query_string]		; # Tcl version 8.5
+	
+	set rev_query_string {}
+	set i [string length $query_string]
+	while {$i > 0} {
+		append rev_query_string [string index $query_string [incr i -1]]
+	}
+	
+	set rev_compl_query_string [string map { A T G C C G T A } $rev_query_string]
+	set query_string $rev_compl_query_string
+	
 }
 
 proc Run_String_Analysis_01 { } {
 	
+	global dna_string_direction
 	global interactive_mode
 	global basic_data_array
 	global max_array_item
@@ -430,7 +469,9 @@ proc Run_String_Analysis_01 { } {
 		set find_query [string first $query_string $current_string]
 		if { $find_query != -1 } {
 			incr q
-			set query_data_log "$i $q $query_string $current_string $find_query"
+			# set query_data_log "$i $q $query_string $current_string $find_query"
+			set id [Format_Key_Value $i]
+			set query_data_log "$id $dna_string_direction $current_string $query_string $find_query $q"
 			Print_Query_Data_Log $query_data_log
 			set log_message " $q out of $i found within $max_array_item set "
 			Print_Log_Message $log_message
@@ -443,6 +484,24 @@ proc Run_String_Analysis_01 { } {
 		Read_StdIn_Data
 		break
 	}
+	
+}
+
+proc Format_Key_Value { i } {
+	
+	global max_array_item
+	
+	set max_id_len [string length $max_array_item]
+	set id $i
+	set id_len [string length $id]
+	while { $id_len < $max_id_len } {
+		set id "0$id"
+		set id_len [string length $id]
+		# puts $id;			Debugging
+		# puts $id_len;		Debugging
+	}
+	
+	return $id
 	
 }
 
