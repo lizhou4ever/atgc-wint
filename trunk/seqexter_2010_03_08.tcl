@@ -38,6 +38,8 @@ proc Set_Global_Parameters { query_input } {
 	global query_array			; # array with multiple queries form query input file
 	global reverse_compl		; # reverse-complement DNA string conversion
 	global sleep_time			; # time interval for debugging purpose
+	global trimL_query_array	; # array with LEFT trimmed search strings
+	global trimR_query_array	; # array with RIGHT trimmed search strings
 	global valid_commands_list	; # list of commands for interactive dialog
 	global valid_commands_array	; # array of commands for interactive dialog
 	global upper_case			; # convert text input data to upper case
@@ -246,13 +248,19 @@ proc Open_Files { input_file file_out_base } {
 	global file_in_1	; # input file channel
 	global file_out0	; # log file channel
 	global file_out1	; # output file 1
+	global file_out2	; # output file 2 - trim left alignment
+	global file_out3	; # output file 3 - trim right alignment
 	
 	set file_name_0 $file_out_base\.Log
-	set file_name_1 $file_out_base\.Out
+	set file_name_1 $file_out_base\.Search
+	set file_name_2 $file_out_base\.TrimL
+	set file_name_3 $file_out_base\.TrimR
 	
 	set file_in_1 [open $input_file  "r"]
 	set file_out0 [open $file_name_0 "w"]
 	set file_out1 [open $file_name_1 "w"]
+	set file_out2 [open $file_name_2 "w"]
+	set file_out3 [open $file_name_3 "w"]
 	
 }
 
@@ -410,6 +418,7 @@ proc Check_Line_for_Exception_01 { current_line } {
 
 proc Run_Proc_01 { } {
 	
+	global query_string
 	global reverse_compl
 	global dna_string_direction
 	
@@ -421,27 +430,33 @@ proc Run_Proc_01 { } {
 	if { $reverse_compl == "TRUE" } {
 		set dna_string_direction "FRW"
 		Run_String_Analysis_01			; # First Round of Search - FORWARD DNA string
-		Reverse_Complement_String
+		set string_frw $query_string
+		set string_rev_compl [Reverse_Complement_String $string_frw]
+		set query_string $string_rev_compl
 		set dna_string_direction "REV"
 		Run_String_Analysis_01			; # Second Round of Search REVERSE DNA string
 	}
 	
 }
 
-proc Reverse_Complement_String { } {
+proc Reverse_Complement_String { string_frw } {
 	
-	global query_string
+	global sleep_time
 	
-	### set rev_query_string [string reverse $query_string]		; # Tcl version 8.5
+	### set string_rev [string reverse $string_frw]		; # Tcl version 8.5
 	
-	set rev_query_string {}
-	set i [string length $query_string]
+	set string_rev {}
+	set i [string length $string_frw]
 	while {$i > 0} {
-		append rev_query_string [string index $query_string [incr i -1]]
+		append string_rev [string index $string_frw [incr i -1]]
 	}
 	
-	set rev_compl_query_string [string map { A T G C C G T A } $rev_query_string]
-	set query_string $rev_compl_query_string
+	set string_rev_compl [string map { A T G C C G T A } $string_rev]
+	
+	# puts $string_frw				; # Degugging
+	# puts $string_rev_compl		; # Debugging
+	# after $sleep_time				; # Debugging
+	return $string_rev_compl
 	
 }
 
@@ -453,14 +468,25 @@ proc Run_String_Analysis_01 { } {
 	global max_array_item
 	global query_string
 	global sleep_time
+	global trimL_query_array
+	global trimR_query_array
+	global file_out2
+	global file_out3
+	
+	foreach key [array names trimL_query_array] { unset trimL_query_array($key) }
+	foreach key [array names trimR_query_array] { unset trimR_query_array($key) }
 	
 	if { $query_string == "" } {
 		Read_Query_String
 		break
 	}
 	
-	set log_message " String Analysis 01 "
+	set current_time [Check_Current_Time]
+	set log_message " START $current_time | String Analysis 01 | $dna_string_direction | $query_string "
 	Print_Log_Message $log_message
+	Print_Query_Data_Log $log_message
+	
+	set query_length [string length $query_string]
 	
 	set i 1 
 	set q 0 
@@ -469,21 +495,100 @@ proc Run_String_Analysis_01 { } {
 		set find_query [string first $query_string $current_string]
 		if { $find_query != -1 } {
 			incr q
-			# set query_data_log "$i $q $query_string $current_string $find_query"
+			set current_time [Check_Current_Time]
 			set id [Format_Key_Value $i]
 			set query_data_log "$id $dna_string_direction $current_string $query_string $find_query $q"
 			Print_Query_Data_Log $query_data_log
-			set log_message " $q out of $i found within $max_array_item set "
+			set trim_left  [Get_Left_Trimmed_String  $current_string $find_query $query_length]
+			set trim_right [Get_Right_Trimmed_String $current_string $find_query $query_length]
+			Print_Left_Alignment  $trim_left  $id
+			Print_Right_Alignment $trim_right $id
+			set trimL_query_array($id) $trim_left
+			set trimR_query_array($id) $trim_right
+			set log_message " $q out of $i found within $max_array_item items  |  $current_time "
 			Print_Log_Message $log_message
 		}
 		incr i
 	}
+	
+	set current_time [Check_Current_Time]
+	set log_message "  END  $current_time | String Analysis 01 | $dna_string_direction | $query_string "
+	puts $file_out2 "-----------------------------------------"
+	puts $file_out3 "-----------------------------------------"
+	Print_Log_Message $log_message
+	Print_Query_Data_Log $log_message
 	after $sleep_time
 	
 	if { $interactive_mode == "TRUE" } {
 		Read_StdIn_Data
 		break
 	}
+	
+}
+
+proc Get_Left_Trimmed_String  { current_string query_match query_length } {
+	
+	global dna_string_direction
+	
+	### CASE 1 - FORWARD direction
+	if { $dna_string_direction == "FRW" } {
+		set x_pos $query_match
+		set trim_left [string range $current_string $x_pos end]
+	}
+	
+	### CASE 2 - REVERSE direction
+	if { $dna_string_direction == "REV" } {
+		set x_pos [expr $query_match + $query_length - 1]
+		set trim_left [string range $current_string 0 $x_pos]
+		set string_frw $trim_left
+		set string_rev_compl [Reverse_Complement_String $string_frw]
+		set trim_left $string_rev_compl
+	}
+	
+	return $trim_left
+	
+}
+
+proc Get_Right_Trimmed_String { current_string query_match query_length } {
+	
+	global dna_string_direction
+	
+	### CASE 1 - FORWARD direction
+	if { $dna_string_direction == "FRW" } {
+		set x_pos [expr $query_match + $query_length - 1]
+		set trim_right [string range $current_string 0 $x_pos]
+	}
+	
+	### CASE 2 - REVERSE direction
+	if { $dna_string_direction == "REV" } {
+		set x_pos $query_match
+		set trim_right [string range $current_string $x_pos end]
+		set string_frw $trim_right
+		set string_rev_compl [Reverse_Complement_String $string_frw]
+		set trim_right $string_rev_compl
+	}
+	
+	return $trim_right
+	
+}
+
+proc Print_Left_Alignment  { trim_left id } {
+	
+	global dna_string_direction
+	global file_out2
+	
+	puts "TRIM_ALIGN_LEFT   $id\t$dna_string_direction\t$trim_left"
+	puts $file_out2 "$id\t$dna_string_direction\t$trim_left"
+	
+}
+
+proc Print_Right_Alignment { trim_right id } {
+	
+	global dna_string_direction
+	global file_out3
+	
+	puts "TRIM_ALIGN_RIGHT $id\t$dna_string_direction\t$trim_right"
+	puts $file_out3 "$id\t$dna_string_direction\t$trim_right"
 	
 }
 
@@ -538,10 +643,14 @@ proc Close_Files { } {
 	global file_in_1	; # Input File
 	global file_out0	; # Log File 
 	global file_out1	; # Output File 1
+	global file_out2
+	global file_out3
 	
 	close $file_in_1
 	close $file_out0
 	close $file_out1
+	close $file_out2
+	close $file_out3
 	
 }
 
