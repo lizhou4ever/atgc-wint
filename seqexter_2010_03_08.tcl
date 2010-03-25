@@ -28,10 +28,12 @@ proc Set_Global_Parameters { query_input } {
 	global initial_time			; # program start time
 	global live_string			; # inpuit stdin
 	global loop_status			; # multiple or single iteration
+	global max_align_length		; # alignment length - temporary solution
 	global max_array_item		; # size of the array with strings from input file
 	global max_query_item		; # size of the array with query strings
 	global mod_value			; # delay in next step in milliseconds to read debugging messages
 	global proc_id				; # procedure ID
+	global query_count			; # count of processed queries
 	global query_file			; # file with query strings
 	global query_string			; # query string
 	global query_type			; # query in file or stdin
@@ -40,6 +42,8 @@ proc Set_Global_Parameters { query_input } {
 	global sleep_time			; # time interval for debugging purpose
 	global trimL_query_array	; # array with LEFT trimmed search strings
 	global trimR_query_array	; # array with RIGHT trimmed search strings
+	global trimL_query_slist	; # list of arrays with strings for sorting
+	global trimR_query_slist	; # list of arrays with strings for sorting
 	global valid_commands_list	; # list of commands for interactive dialog
 	global valid_commands_array	; # array of commands for interactive dialog
 	global upper_case			; # convert text input data to upper case
@@ -65,6 +69,10 @@ proc Set_Global_Parameters { query_input } {
 	
 	set reverse_compl "TRUE"
 	# set reverse_compl "FALSE"
+	
+	set query_count 0 
+	
+	set max_align_length 85 
 	
 }
 
@@ -250,17 +258,20 @@ proc Open_Files { input_file file_out_base } {
 	global file_out1	; # output file 1
 	global file_out2	; # output file 2 - trim left alignment
 	global file_out3	; # output file 3 - trim right alignment
+	global file_out4	; # output file 4 - summary per query
 	
 	set file_name_0 $file_out_base\.Log
 	set file_name_1 $file_out_base\.Search
 	set file_name_2 $file_out_base\.TrimL
 	set file_name_3 $file_out_base\.TrimR
+	set file_name_4 $file_out_base\.Summary
 	
 	set file_in_1 [open $input_file  "r"]
 	set file_out0 [open $file_name_0 "w"]
 	set file_out1 [open $file_name_1 "w"]
 	set file_out2 [open $file_name_2 "w"]
 	set file_out3 [open $file_name_3 "w"]
+	set file_out4 [open $file_name_4 "w"]
 	
 }
 
@@ -418,16 +429,19 @@ proc Check_Line_for_Exception_01 { current_line } {
 
 proc Run_Proc_01 { } {
 	
+	global query_count
 	global query_string
 	global reverse_compl
 	global dna_string_direction
 	
 	if { $reverse_compl == "FALSE" } {
+		incr query_count
 		set dna_string_direction "FRW"
 		Run_String_Analysis_01
 	}
 	
 	if { $reverse_compl == "TRUE" } {
+		incr query_count
 		set dna_string_direction "FRW"
 		Run_String_Analysis_01			; # First Round of Search - FORWARD DNA string
 		set string_frw $query_string
@@ -466,17 +480,24 @@ proc Run_String_Analysis_01 { } {
 	global interactive_mode
 	global basic_data_array
 	global max_array_item
+	global query_count
 	global query_string
 	global sleep_time
 	global trimL_query_array
 	global trimR_query_array
-	global file_out2
-	global file_out3
+	global trimL_query_slist
+	global trimR_query_slist
 	
+	### UNSET ALL RESULTS OF PREVIOUS SEARCH ###
 	foreach key [array names trimL_query_array] { unset trimL_query_array($key) }
 	foreach key [array names trimR_query_array] { unset trimR_query_array($key) }
+	set trimL_query_slist {}
+	set trimR_query_slist {}
+	# unset trimL_query_slist
+	# unset trimR_query_slist
 	
-	if { $query_string == "" } {
+	### IF QUERY STRING IS EMPTY THEN ASK FOR INPUT ###
+	if { $query_string == "" && $interactive_mode == "TRUE" } {
 		Read_Query_String
 		break
 	}
@@ -501,22 +522,27 @@ proc Run_String_Analysis_01 { } {
 			Print_Query_Data_Log $query_data_log
 			set trim_left  [Get_Left_Trimmed_String  $current_string $find_query $query_length]
 			set trim_right [Get_Right_Trimmed_String $current_string $find_query $query_length]
-			Print_Left_Alignment  $trim_left  $id
-			Print_Right_Alignment $trim_right $id
-			set trimL_query_array($id) $trim_left
-			set trimR_query_array($id) $trim_right
+			set trimL_query_array($id) "$id\t$dna_string_direction\t$trim_left\t__$query_count\__"
+			set trimR_query_array($id) "$id\t$dna_string_direction\t$trim_right\t__$query_count\__"
+			set trimL_query_slist [lappend trimL_query_slist $trimL_query_array($id)]
+			set trimR_query_slist [lappend trimR_query_slist $trimR_query_array($id)]
 			set log_message " $q out of $i found within $max_array_item items  |  $current_time "
 			Print_Log_Message $log_message
 		}
 		incr i
 	}
 	
+	Print_Left_Alignment  $q
+	Print_Right_Alignment $q
+	
+	set query_summary_log "$query_count\t$dna_string_direction\t$query_string\t$q"
+	Print_Query_Sumary $query_summary_log
+	
 	set current_time [Check_Current_Time]
 	set log_message "  END  $current_time | String Analysis 01 | $dna_string_direction | $query_string "
-	puts $file_out2 "-----------------------------------------"
-	puts $file_out3 "-----------------------------------------"
 	Print_Log_Message $log_message
 	Print_Query_Data_Log $log_message
+	
 	after $sleep_time
 	
 	if { $interactive_mode == "TRUE" } {
@@ -526,9 +552,17 @@ proc Run_String_Analysis_01 { } {
 	
 }
 
+proc Print_Query_Sumary { query_summary_log } {
+	
+	global file_out4
+	puts $file_out4 $query_summary_log
+	
+}
+
 proc Get_Left_Trimmed_String  { current_string query_match query_length } {
 	
 	global dna_string_direction
+	global max_align_length
 	
 	### CASE 1 - FORWARD direction
 	if { $dna_string_direction == "FRW" } {
@@ -545,6 +579,12 @@ proc Get_Left_Trimmed_String  { current_string query_match query_length } {
 		set trim_left $string_rev_compl
 	}
 	
+	set left_length [string length $trim_left]
+	while { $left_length < $max_align_length } {
+		set trim_left "$trim_left\-"
+		set left_length [string length $trim_left]
+	}
+	
 	return $trim_left
 	
 }
@@ -552,6 +592,7 @@ proc Get_Left_Trimmed_String  { current_string query_match query_length } {
 proc Get_Right_Trimmed_String { current_string query_match query_length } {
 	
 	global dna_string_direction
+	global max_align_length
 	
 	### CASE 1 - FORWARD direction
 	if { $dna_string_direction == "FRW" } {
@@ -568,27 +609,41 @@ proc Get_Right_Trimmed_String { current_string query_match query_length } {
 		set trim_right $string_rev_compl
 	}
 	
+	set right_length [string length $trim_right]
+	while { $right_length < $max_align_length } {
+		set trim_right "\-$trim_right"
+		set right_length [string length $trim_right]
+	}
+	
 	return $trim_right
 	
 }
 
-proc Print_Left_Alignment  { trim_left id } {
+proc Print_Left_Alignment  { q } {
 	
-	global dna_string_direction
+	global trimL_query_slist
 	global file_out2
 	
-	puts "TRIM_ALIGN_LEFT   $id\t$dna_string_direction\t$trim_left"
-	puts $file_out2 "$id\t$dna_string_direction\t$trim_left"
+	set trimL_query_slist [lsort $trimL_query_slist]
+	foreach item $trimL_query_slist {
+		puts $file_out2 $item
+	}
+	
+	puts $file_out2 "************************************************"
 	
 }
 
-proc Print_Right_Alignment { trim_right id } {
+proc Print_Right_Alignment { q } {
 	
-	global dna_string_direction
+	global trimR_query_slist
 	global file_out3
 	
-	puts "TRIM_ALIGN_RIGHT $id\t$dna_string_direction\t$trim_right"
-	puts $file_out3 "$id\t$dna_string_direction\t$trim_right"
+	set trimR_query_slist [lsort $trimR_query_slist]
+	foreach item $trimR_query_slist {
+		puts $file_out3 $item
+	}
+	
+	puts $file_out3 "************************************************"
 	
 }
 
@@ -645,12 +700,14 @@ proc Close_Files { } {
 	global file_out1	; # Output File 1
 	global file_out2
 	global file_out3
+	global file_out4
 	
 	close $file_in_1
 	close $file_out0
 	close $file_out1
 	close $file_out2
 	close $file_out3
+	close $file_out4
 	
 }
 
