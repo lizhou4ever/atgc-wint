@@ -72,7 +72,9 @@ proc Set_Global_Parameters { query_input } {
 	
 	set query_count 0 
 	
-	set max_align_length 85 
+	### set max_align_length 85 
+	
+	set sleep_time 360 
 	
 }
 
@@ -134,20 +136,22 @@ proc SeqExter {argv} {
 	
 	global interactive_mode
 	global loop_status
+	global max_align_length
 	global mod_value
 	global proc_id
 	global query_type
 	global query_file
 	global sleep_time
 	
-	set input_file    [lindex $argv 0]
-	set file_out_base [lindex $argv 1]
-	set query_type    [lindex $argv 2]
-	set query_input   [lindex $argv 3]
-	set mod_value     [lindex $argv 4]
-	set sleep_time    [lindex $argv 5]
-	set proc_id       [lindex $argv 6]
-	set loop_status   [lindex $argv 7]
+	set input_file        [lindex $argv 0]
+	set file_out_base     [lindex $argv 1]
+	set query_type        [lindex $argv 2]
+	set query_input       [lindex $argv 3]
+	set mod_value         [lindex $argv 4]
+	### set sleep_time    [lindex $argv 5]
+	set max_align_length  [lindex $argv 5]
+	set proc_id           [lindex $argv 6]
+	set loop_status       [lindex $argv 7]
 	
 	Set_Global_Parameters $query_input
 	
@@ -228,11 +232,14 @@ proc Read_Query_File { } {
 	
 	set file_in_2 [open $query_file  "r"]
 	
+	set mod_q_val 100 
+	
 	set q 0 
 	while {[gets $file_in_2 current_line] >= 0} {
 		incr q
 		set current_query $current_line
 		Create_Query_Data_Array $q $current_query
+		Check_Mod_Status $q $q $mod_q_val
 	}
 	close $file_in_2
 	
@@ -736,16 +743,16 @@ if {$argc != 8} {
 	puts "                                                                                      "
 	puts "Program usage:                                                                        "
 	puts "Input_File\[0\],  Output_File\[1\],  Query_Input_Type\[2\],  String_or_FileName\[3\], "
-	puts "   Mod_Val\[4\],  Sleep_Interval\[5\],  Procedure_ID\[6\],  Number_of_Iterations\[7\] "
+	puts "   Mod_Val\[4\],  Max_Align_Len\[5\],  Procedure_ID\[6\],  Number_of_Iterations\[7\]  "
 	puts "                                                                                      "
 	puts "example to run the program in the interactive mode:                                   "
-	puts "my_input   my_output   STRING   _STDIN_    10000   1000   PROC_01   LOOP_SINGLE       "
+	puts "my_input   my_output   STRING   _STDIN_    10000   100    PROC_01   LOOP_SINGLE       "
 	puts "                                                                                      "
 	puts "example for the single string query:                                                  "
-	puts "my_input   my_output   STRING   ATGCATGC   10000   1000   PROC_01   LOOP_NESTED       "
+	puts "my_input   my_output   STRING   ATGCATGC   10000   100    PROC_01   LOOP_NESTED       "
 	puts "                                                                                      "
 	puts "example for multiple query strings in file:                                           "
-	puts "my_input   my_output    FILE    my_query   10000   1000   PROC_01   LOOP_SINGLE       "
+	puts "my_input   my_output    FILE    my_query   10000   100    PROC_01   LOOP_SINGLE       "
 	puts "                                                                                      "
 } else {
 	set query_type [lindex $argv 2]
@@ -754,6 +761,12 @@ if {$argc != 8} {
 		puts "    Query_Input_Type must be STRING or FILE    "
 		puts "                                               "
 		exit
+	}
+	set max_align_length [lindex $argv 5]
+	if { $max_align_length < 40 || $max_align_length > 10000 } {
+		puts "                                               "
+		puts "  Max_Align_Length must be within 40 - 10000   "
+		puts "                                               "
 	}
 	set proc_id [lindex $argv 6]
 	if { $proc_id != "PROC_01" && $proc_id != "PROC_02" } {
