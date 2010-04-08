@@ -1,0 +1,7 @@
+#labels Featured
+#SeqExter - DNA string search and alignment
+
+= SeqExter Usage
+
+bash-2.03$ tclsh8.4 seqexter_2010_03_08.tcl lactuca_IGA_reads_mRNASeq_test.seqs lactuca_IGA_reads_mRNASeq_test.seqs.out FILE lactuca_big_gene_CDS.frgm.query 10000   100    PROC_01   LOOP_SINGLE
+
