@@ -33,4 +33,5 @@ example TrimL output:
 056967  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGCCCAGTTGTAACAATCAAACGCAGTGCAGAAGAGACCCCT--------------------------    __3__
 056968  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGTCCAGTTG----------------------------------------------------------    __3__
 056969  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGTCCAGTTGTAACAATCAAACGCAG------------------------------------------    __3__
+__________________________________I_ putative SNP position 
 }}}
