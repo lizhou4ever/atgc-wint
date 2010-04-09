@@ -5,10 +5,14 @@
 
 with lactuca_big_gene_CDS.frgm.query file:
 
+{{{
 bash-2.03$ tclsh8.4 seqexter_2010_03_08.tcl lactuca_IGA_reads_mRNASeq_test.seqs lactuca_IGA_reads_mRNASeq_test.seqs.out FILE lactuca_big_gene_CDS.frgm.query 10000   100    PROC_01   LOOP_SINGLE
+}}}
 
 or (with lactuca_SNPs_907_CDS.test.query test file):
 
+{{{
 tclsh8.4 seqexter_2010_03_08.tcl lactuca_IGA_reads_mRNASeq_test.seqs lactuca_IGA_reads_mRNASeq_test.seqs.snp FILE lactuca_SNPs_907_CDS.test.query 10000   100    PROC_01   LOOP_SINGLE
+}}}
 
-for these examples, the script reads short DNA fragments (Illumina GA sequences) from input file 'lactuca_IGA_reads_mRNASeq_test.seqs', loads these DNA fragments into computer memory, then it searches query strings in file(s) 'lactuca_big_gene_CDS.frgm.query' for perfect matches versus DNA IGA reads. Aligned results of search are written into '*.TrimL' and 'TrimR' files.
+for these examples, the script reads short DNA fragments (Illumina GA sequences) from input file 'lactuca_IGA_reads_mRNASeq_test.seqs', loads these DNA fragments into computer memory, then it searches query strings in file(s) 'lactuca_big_gene_CDS.frgm.query' for perfect matches versus DNA IGA reads. Aligned results of search are written into '`*`.TrimL' and '`*`.TrimR' files.
