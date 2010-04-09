@@ -16,3 +16,21 @@ tclsh8.4 seqexter_2010_03_08.tcl lactuca_IGA_reads_mRNASeq_test.seqs lactuca_IGA
 }}}
 
 for these examples, the script reads short DNA fragments (Illumina GA sequences) from input file 'lactuca_IGA_reads_mRNASeq_test.seqs', loads these DNA fragments into computer memory, then it searches query strings in file(s) 'lactuca_big_gene_CDS.frgm.query' for perfect matches versus DNA IGA reads. Aligned results of search are written into '`*`.TrimL' and '`*`.TrimR' files.
+
+example TrimL output:
+{{{
+009967  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGCCCAGTTGTAA-------------------------------------------------------    __3__
+012221  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGCCCAGTTGTAACAATCAAACGCAGTGCAGAAGAGACCCCTAATGATCCT-----------------    __3__
+012222  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGTCCAGTTGTAACAATCAAACGCAGTGCAGAAGAGACCCCTAATGAT--------------------    __3__
+012223  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGTCCAGTTGTAACAATCAAACGCAGTGCAGAAGAGACCCCTAATGATCCT-----------------    __3__
+027155  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGCCCAGTTGTAACAATCAAACGCAGTGCAGAAGAGACCCCTAATGATCCTG----------------    __3__
+031561  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGTCCAGTTGTAACAATCAAACGCAGTGCAGAAGA---------------------------------    __3__
+031581  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGCCCAGTTGTAACAA----------------------------------------------------    __3__
+031582  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGTCCAGTTGTAACAA----------------------------------------------------    __3__
+037273  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGCCCAGTTGTAACAATCAAACGCAGTGCAGAAGAGA-------------------------------    __3__
+037536  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGCCCAGTTGTAACAATC--------------------------------------------------    __3__
+037537  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGTCCAG-------------------------------------------------------------    __3__
+056967  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGCCCAGTTGTAACAATCAAACGCAGTGCAGAAGAGACCCCT--------------------------    __3__
+056968  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGTCCAGTTG----------------------------------------------------------    __3__
+056969  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGTCCAGTTGTAACAATCAAACGCAG------------------------------------------    __3__
+}}}
