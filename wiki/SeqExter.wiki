@@ -3,6 +3,15 @@
 
 = SeqExter Usage
 
+{{{
+Program usage:
+Input_File[0],  Output_File[1],  Query_Input_Type[2],  String_or_FileName[3],
+   Mod_Val[4],  Max_Align_Len[5],  Procedure_ID[6],  Number_of_Iterations[7]
+...
+example for multiple query strings in file:
+my_input   my_output    FILE    my_query   10000   100    PROC_01   LOOP_SINGLE
+}}}
+
 with lactuca_big_gene_CDS.frgm.query file:
 
 {{{
