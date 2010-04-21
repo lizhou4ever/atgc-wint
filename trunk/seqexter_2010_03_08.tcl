@@ -382,7 +382,9 @@ proc Check_StdIn_Data { } {
 		Read_Query_String
 	} elseif { $live_string == "Proc_01" } {
 		puts " Proc_01 "
-		Run_String_Analysis_01
+		### Run_String_Analysis_01
+		Run_Proc_01
+		Read_StdIn_Data
 	} elseif { $live_string == "Proc_02" } {
 		puts " Proc_02 "
 		Run_String_Analysis_02
@@ -552,10 +554,10 @@ proc Run_String_Analysis_01 { } {
 	
 	after $sleep_time
 	
-	if { $interactive_mode == "TRUE" } {
-		Read_StdIn_Data
-		break
-	}
+	### if { $interactive_mode == "TRUE" } { }
+	### 	Read_StdIn_Data
+	### 	break
+	### { }
 	
 }
 
@@ -634,6 +636,7 @@ proc Print_Left_Alignment  { q } {
 	set trimL_query_slist [lsort $trimL_query_slist]
 	foreach item $trimL_query_slist {
 		puts $file_out2 $item
+		puts $item
 	}
 	
 	puts $file_out2 "************************************************"
@@ -648,6 +651,7 @@ proc Print_Right_Alignment { q } {
 	set trimR_query_slist [lsort $trimR_query_slist]
 	foreach item $trimR_query_slist {
 		puts $file_out3 $item
+		puts $item
 	}
 	
 	puts $file_out3 "************************************************"
