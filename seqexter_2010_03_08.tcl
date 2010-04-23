@@ -498,6 +498,9 @@ proc Process_Consensus { } {
 	global consensus_slist_TrimR
 	global max_array_item
 	
+	set dummy_id_len [string length $max_array_item]
+	set dummy_id [string repeat "*" $dummy_id_len]
+	
 	puts "   PRINT   CONSENSUS   "
 	
 	puts "  TRIM LEFT CONSENSUS  "
@@ -513,16 +516,19 @@ proc Process_Consensus { } {
 	set fract_T_string [lindex $current_consensus_L 1]
 	set fract_G_string [lindex $current_consensus_L 2]
 	set fract_C_string [lindex $current_consensus_L 3]
+	set all_ATGC_count [lindex $current_consensus_L 4]
 	
-	puts "_fract__A_\t_A_\t$fract_A_string" 
-	puts "_fract__T_\t_T_\t$fract_T_string" 
-	puts "_fract__G_\t_G_\t$fract_G_string" 
-	puts "_fract__C_\t_C_\t$fract_C_string" 
+	puts "$dummy_id\t_A_\t$fract_A_string" 
+	puts "$dummy_id\t_T_\t$fract_T_string" 
+	puts "$dummy_id\t_G_\t$fract_G_string" 
+	puts "$dummy_id\t_C_\t$fract_C_string" 
+	puts "$dummy_id\tALL\t$all_ATGC_count"
 	
-	puts $file_out5 "_fract__A_\t_A_\t$fract_A_string" 
-	puts $file_out5 "_fract__T_\t_T_\t$fract_T_string" 
-	puts $file_out5 "_fract__G_\t_G_\t$fract_G_string" 
-	puts $file_out5 "_fract__C_\t_C_\t$fract_C_string" 
+	puts $file_out5 "$dummy_id\t_A_\t$fract_A_string" 
+	puts $file_out5 "$dummy_id\t_T_\t$fract_T_string" 
+	puts $file_out5 "$dummy_id\t_G_\t$fract_G_string" 
+	puts $file_out5 "$dummy_id\t_C_\t$fract_C_string" 
+	puts $file_out5 "$dummy_id\tALL\t$all_ATGC_count"
 	
 	puts $file_out5 "****************************************************************************"
 	puts $file_out5 ""
@@ -587,6 +593,7 @@ proc Alignment_Analysis { current_alignment } {
 	set string_T_fract {}
 	set string_G_fract {}
 	set string_C_fract {}
+	set string_all_num {}
 	
 	set p 0 
 	while { $p < $max_align_length } {
@@ -595,6 +602,7 @@ proc Alignment_Analysis { current_alignment } {
 			set fract_T "-"
 			set fract_G "-"
 			set fract_C "-"
+			set all_num "-"
 		}
 		if { $count_all_chr($p) > 0 } {
 			set fract_A [expr round(($count_A_items($p))*10.0/$count_all_chr($p))]
@@ -614,11 +622,42 @@ proc Alignment_Analysis { current_alignment } {
 			if { $fract_C == 10 } {
 				set fract_C "X"
 			}
+			if { $count_all_chr($p) >= 10 } {
+				set all_num "a"
+			}
+			if { $count_all_chr($p) >= 20 } {
+				set all_num "b"
+			}
+			if { $count_all_chr($p) >= 30 } {
+				set all_num "c"
+			}
+			if { $count_all_chr($p) >= 40 } {
+				set all_num "d"
+			}
+			if { $count_all_chr($p) >= 50 } {
+				set all_num "e"
+			}
+			if { $count_all_chr($p) >= 60 } {
+				set all_num "f"
+			}
+			if { $count_all_chr($p) >= 70 } {
+				set all_num "g"
+			}
+			if { $count_all_chr($p) >= 80 } {
+				set all_num "h"
+			}
+			if { $count_all_chr($p) >= 90 } {
+				set all_num "i"
+			}
+			if { $count_all_chr($p) >= 100 } {
+				set all_num "j"
+			}
 		}
 		append string_A_fract $fract_A
 		append string_T_fract $fract_T
 		append string_G_fract $fract_G
 		append string_C_fract $fract_C
+		append string_all_num $all_num
 		incr p
 	}
 	
@@ -631,6 +670,8 @@ proc Alignment_Analysis { current_alignment } {
 	set list_of_ATGC_fractions [lappend list_of_ATGC_fractions $string_G_fract]
 	# puts $string_C_fract
 	set list_of_ATGC_fractions [lappend list_of_ATGC_fractions $string_C_fract]
+	# puts $string_all_num
+	set list_of_ATGC_fractions [lappend list_of_ATGC_fractions $string_all_num]
 	
 	set current_consensus_L $list_of_ATGC_fractions
 	return $current_consensus_L
