@@ -260,18 +260,24 @@ proc Create_Query_Data_Array { q current_query } {
 
 proc Open_Files { input_file file_out_base } {
 	
+	global proc_id
+	
 	global file_in_1	; # input file channel
 	global file_out0	; # log file channel
 	global file_out1	; # output file 1
 	global file_out2	; # output file 2 - trim left alignment
 	global file_out3	; # output file 3 - trim right alignment
 	global file_out4	; # output file 4 - summary per query
+	global file_out5	; # output file 5 - alignment data per iteration
+	global file_out6	; # output file 6 - assembled consensus
 	
 	set file_name_0 $file_out_base\.Log
 	set file_name_1 $file_out_base\.Search
 	set file_name_2 $file_out_base\.TrimL
 	set file_name_3 $file_out_base\.TrimR
 	set file_name_4 $file_out_base\.Summary
+	set file_name_5 $file_out_base\.UniSeqs
+	set file_name_6 $file_out_base\.Xassy
 	
 	set file_in_1 [open $input_file  "r"]
 	set file_out0 [open $file_name_0 "w"]
@@ -279,6 +285,8 @@ proc Open_Files { input_file file_out_base } {
 	set file_out2 [open $file_name_2 "w"]
 	set file_out3 [open $file_name_3 "w"]
 	set file_out4 [open $file_name_4 "w"]
+	set file_out5 [open $file_name_5 "w"]
+	set file_out6 [open $file_name_6 "w"]
 	
 }
 
@@ -438,10 +446,22 @@ proc Check_Line_for_Exception_01 { current_line } {
 
 proc Run_Proc_01 { } {
 	
+	global consensus_array_Count
+	global consensus_array_TrimL	; # array of trimmed strings to generate consensus
+	global consensus_array_TrimR
+	global consensus_slist_TrimL	; # super-list of array items
+	global consensus_slist_TrimR
 	global query_count
 	global query_string
 	global reverse_compl
 	global dna_string_direction
+	
+	### unset results of previous search for each array key
+	set consensus_array_Count 0 
+	foreach key [array names consensus_array_TrimL] { unset consensus_array_TrimL($key) }
+	foreach key [array names consensus_array_TrimR] { unset consensus_array_TrimR($key) }
+	set consensus_slist_TrimL { }
+	set consensus_slist_TrimR { }
 	
 	if { $reverse_compl == "FALSE" } {
 		incr query_count
@@ -459,6 +479,33 @@ proc Run_Proc_01 { } {
 		set dna_string_direction "REV"
 		Run_String_Analysis_01			; # Second Round of Search REVERSE DNA string
 	}
+	
+	Generate_Consensus
+	
+}
+
+proc Generate_Consensus { } {
+	
+	global file_out5
+	global consensus_slist_TrimL
+	global consensus_slist_TrimR
+	
+	puts "   PRINT   CONSENSUS   "
+	
+	puts "  TRIM LEFT CONSENSUS  "
+	set consensus_slist_TrimL [lsort $consensus_slist_TrimL]
+	foreach item $consensus_slist_TrimL {
+		puts $file_out5 $item
+		puts $item
+	}
+	
+	### puts "  TRIM RIGHT CONSENSUS  "
+	### set consensus_slist_TrimR [lsort $consensus_slist_TrimR]
+	### foreach item $consensus_slist_TrimR { } 
+	### 	puts $item
+	### { }
+	puts "    *CONSENSUS*    "
+	puts "                   "
 	
 }
 
@@ -496,14 +543,17 @@ proc Run_String_Analysis_01 { } {
 	global trimR_query_array
 	global trimL_query_slist
 	global trimR_query_slist
+	global consensus_array_Count
+	global consensus_array_TrimL
+	global consensus_array_TrimR
+	global consensus_slist_TrimL
+	global consensus_slist_TrimR
 	
 	### UNSET ALL RESULTS OF PREVIOUS SEARCH ###
 	foreach key [array names trimL_query_array] { unset trimL_query_array($key) }
 	foreach key [array names trimR_query_array] { unset trimR_query_array($key) }
 	set trimL_query_slist {}
 	set trimR_query_slist {}
-	# unset trimL_query_slist
-	# unset trimR_query_slist
 	
 	### IF QUERY STRING IS EMPTY THEN ASK FOR INPUT ###
 	if { $query_string == "" && $interactive_mode == "TRUE" } {
@@ -525,16 +575,28 @@ proc Run_String_Analysis_01 { } {
 		set find_query [string first $query_string $current_string]
 		if { $find_query != -1 } {
 			incr q
+			incr consensus_array_Count
 			set current_time [Check_Current_Time]
 			set id [Format_Key_Value $i]
 			set query_data_log "$id $dna_string_direction $current_string $query_string $find_query $q"
 			Print_Query_Data_Log $query_data_log
+			### TRIMMING TO THE START or END OF THE QUERY STRING ###
 			set trim_left  [Get_Left_Trimmed_String  $current_string $find_query $query_length]
 			set trim_right [Get_Right_Trimmed_String $current_string $find_query $query_length]
-			set trimL_query_array($id) "$id\t$dna_string_direction\t$trim_left\t__$query_count\__"
-			set trimR_query_array($id) "$id\t$dna_string_direction\t$trim_right\t__$query_count\__"
+			### ALIGNMENT DATA STRING ###
+			set aln_string_l "$id\t$dna_string_direction\t$trim_left\t__$query_count\__"
+			set aln_string_r "$id\t$dna_string_direction\t$trim_right\t__$query_count\__"
+			### TRIMMED ALIGNMENT ARRAY ###
+			set trimL_query_array($id) $aln_string_l
+			set trimR_query_array($id) $aln_string_r
 			set trimL_query_slist [lappend trimL_query_slist $trimL_query_array($id)]
 			set trimR_query_slist [lappend trimR_query_slist $trimR_query_array($id)]
+			### CONSENSUS ARRAY ###
+			set consensus_array_TrimL($consensus_array_Count) $aln_string_l
+			set consensus_array_TrimR($consensus_array_Count) $aln_string_r
+			set consensus_slist_TrimL [lappend consensus_slist_TrimL $consensus_array_TrimL($consensus_array_Count)]
+			set consensus_slist_TrimR [lappend consensus_slist_TrimR $consensus_array_TrimR($consensus_array_Count)]
+			### LOG MESSAGE ###
 			set log_message " $q out of $i found within $max_array_item items  |  $current_time "
 			Print_Log_Message $log_message
 		}
@@ -636,7 +698,7 @@ proc Print_Left_Alignment  { q } {
 	set trimL_query_slist [lsort $trimL_query_slist]
 	foreach item $trimL_query_slist {
 		puts $file_out2 $item
-		puts $item
+		### puts $item
 	}
 	
 	puts $file_out2 "************************************************"
@@ -651,7 +713,7 @@ proc Print_Right_Alignment { q } {
 	set trimR_query_slist [lsort $trimR_query_slist]
 	foreach item $trimR_query_slist {
 		puts $file_out3 $item
-		puts $item
+		### puts $item
 	}
 	
 	puts $file_out3 "************************************************"
@@ -712,6 +774,8 @@ proc Close_Files { } {
 	global file_out2
 	global file_out3
 	global file_out4
+	global file_out5
+	global file_out6
 	
 	close $file_in_1
 	close $file_out0
@@ -719,6 +783,8 @@ proc Close_Files { } {
 	close $file_out2
 	close $file_out3
 	close $file_out4
+	close $file_out5
+	close $file_out6
 	
 }
 
