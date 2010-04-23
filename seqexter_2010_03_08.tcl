@@ -18,6 +18,13 @@
 # to add new functions, see Read_StdIn_Data and           #
 # Check_StdIn_Data procedures                             #
 #                                                         #
+# Run_String_Analysis_01 function finds all perfect       #
+# matches in input file for a query, builds alignment and #
+# consensus. Basically, it reads input file into memory,  #
+# runs query, generates alignments. It can be used for    #
+# DNA sequence walking, to build long consensus based on  #
+# analysis of short DNA strings.                          #
+#                                                         #
 ###########################################################
 
 proc Set_Global_Parameters { query_input } {
@@ -480,15 +487,16 @@ proc Run_Proc_01 { } {
 		Run_String_Analysis_01			; # Second Round of Search REVERSE DNA string
 	}
 	
-	Generate_Consensus
+	Process_Consensus
 	
 }
 
-proc Generate_Consensus { } {
+proc Process_Consensus { } {
 	
 	global file_out5
 	global consensus_slist_TrimL
 	global consensus_slist_TrimR
+	global max_array_item
 	
 	puts "   PRINT   CONSENSUS   "
 	
@@ -498,6 +506,26 @@ proc Generate_Consensus { } {
 		puts $file_out5 $item
 		puts $item
 	}
+	
+	set current_consensus_L [Alignment_Analysis $consensus_slist_TrimL]
+	
+	set fract_A_string [lindex $current_consensus_L 0]
+	set fract_T_string [lindex $current_consensus_L 1]
+	set fract_G_string [lindex $current_consensus_L 2]
+	set fract_C_string [lindex $current_consensus_L 3]
+	
+	puts "_fract__A_\t_A_\t$fract_A_string" 
+	puts "_fract__T_\t_T_\t$fract_T_string" 
+	puts "_fract__G_\t_G_\t$fract_G_string" 
+	puts "_fract__C_\t_C_\t$fract_C_string" 
+	
+	puts $file_out5 "_fract__A_\t_A_\t$fract_A_string" 
+	puts $file_out5 "_fract__T_\t_T_\t$fract_T_string" 
+	puts $file_out5 "_fract__G_\t_G_\t$fract_G_string" 
+	puts $file_out5 "_fract__C_\t_C_\t$fract_C_string" 
+	
+	puts $file_out5 "****************************************************************************"
+	puts $file_out5 ""
 	
 	### puts "  TRIM RIGHT CONSENSUS  "
 	### set consensus_slist_TrimR [lsort $consensus_slist_TrimR]
@@ -509,6 +537,106 @@ proc Generate_Consensus { } {
 	
 }
 
+proc Alignment_Analysis { current_alignment } {
+	
+	global max_align_length
+	global consensus_array_Count
+	
+	### SET ZERO VALUES FOR ALL ALIGNMENT POSITIONS ###
+	set p 0 		; # position on the alignment
+	while { $p < $max_align_length } {
+		set count_A_items($p) 0 
+		set count_T_items($p) 0 
+		set count_G_items($p) 0 
+		set count_C_items($p) 0 
+		set count_all_chr($p) 0 
+		incr p
+	}
+	
+	set s 0 
+	while { $s < $consensus_array_Count } {
+		set current_data [lindex $current_alignment $s]
+		set current_seqs [lindex [split $current_data "\t"] 2]
+		### puts $current_seqs
+		set p 0 
+		while { $p < $max_align_length } {
+			set current_item [string index $current_seqs $p]
+			### puts $current_item
+			if { $current_item == "A" } {
+				incr count_A_items($p)
+				incr count_all_chr($p)
+			}
+			if { $current_item == "T" } {
+				incr count_T_items($p)
+				incr count_all_chr($p)
+			}
+			if { $current_item == "G" } {
+				incr count_G_items($p)
+				incr count_all_chr($p)
+			}
+			if { $current_item == "C" } {
+				incr count_C_items($p)
+				incr count_all_chr($p)
+			}
+			incr p
+		}
+		incr s
+	}
+	
+	set string_A_fract {}
+	set string_T_fract {}
+	set string_G_fract {}
+	set string_C_fract {}
+	
+	set p 0 
+	while { $p < $max_align_length } {
+		if { $count_all_chr($p) == 0 } {
+			set fract_A "-"
+			set fract_T "-"
+			set fract_G "-"
+			set fract_C "-"
+		}
+		if { $count_all_chr($p) > 0 } {
+			set fract_A [expr round(($count_A_items($p))*10.0/$count_all_chr($p))]
+			set fract_T [expr round(($count_T_items($p))*10.0/$count_all_chr($p))]
+			set fract_G [expr round(($count_G_items($p))*10.0/$count_all_chr($p))]
+			set fract_C [expr round(($count_C_items($p))*10.0/$count_all_chr($p))]
+			
+			if { $fract_A == 10 } {
+				set fract_A "X"
+			}
+			if { $fract_T == 10 } {
+				set fract_T "X"
+			}
+			if { $fract_G == 10 } {
+				set fract_G "X"
+			}
+			if { $fract_C == 10 } {
+				set fract_C "X"
+			}
+		}
+		append string_A_fract $fract_A
+		append string_T_fract $fract_T
+		append string_G_fract $fract_G
+		append string_C_fract $fract_C
+		incr p
+	}
+	
+	set list_of_ATGC_fractions {}
+	# puts $string_A_fract
+	set list_of_ATGC_fractions [lappend list_of_ATGC_fractions $string_A_fract]
+	# puts $string_T_fract
+	set list_of_ATGC_fractions [lappend list_of_ATGC_fractions $string_T_fract]
+	# puts $string_G_fract
+	set list_of_ATGC_fractions [lappend list_of_ATGC_fractions $string_G_fract]
+	# puts $string_C_fract
+	set list_of_ATGC_fractions [lappend list_of_ATGC_fractions $string_C_fract]
+	
+	set current_consensus_L $list_of_ATGC_fractions
+	return $current_consensus_L
+	
+}
+
 proc Reverse_Complement_String { string_frw } {
 	
 	global sleep_time
@@ -517,7 +645,7 @@ proc Reverse_Complement_String { string_frw } {
 	
 	set string_rev {}
 	set i [string length $string_frw]
-	while {$i > 0} {
+	while { $i > 0 } {
 		append string_rev [string index $string_frw [incr i -1]]
 	}
 	
