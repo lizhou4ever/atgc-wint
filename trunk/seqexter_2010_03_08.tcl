@@ -622,6 +622,10 @@ proc Alignment_Analysis { current_alignment } {
 			if { $fract_C == 10 } {
 				set fract_C "X"
 			}
+			
+			### COUNT ALL A T G C CHARS ###
+			set all_num $count_all_chr($p)
+			### REPRESENT LARGE NUMBERS BY LETTER CODE ###
 			if { $count_all_chr($p) >= 10 } {
 				set all_num "a"
 			}
@@ -651,6 +655,45 @@ proc Alignment_Analysis { current_alignment } {
 			}
 			if { $count_all_chr($p) >= 100 } {
 				set all_num "j"
+			}
+			if { $count_all_chr($p) >= 120 } {
+				set all_num "k"
+			}
+			if { $count_all_chr($p) >= 140 } {
+				set all_num "l"
+			}
+			if { $count_all_chr($p) >= 160 } {
+				set all_num "m"
+			}
+			if { $count_all_chr($p) >= 180 } {
+				set all_num "n"
+			}
+			if { $count_all_chr($p) >= 200 } {
+				set all_num "o"
+			}
+			if { $count_all_chr($p) >= 300 } {
+				set all_num "p"
+			}
+			if { $count_all_chr($p) >= 400 } {
+				set all_num "q"
+			}
+			if { $count_all_chr($p) >= 500 } {
+				set all_num "r"
+			}
+			if { $count_all_chr($p) >= 600 } {
+				set all_num "s"
+			}
+			if { $count_all_chr($p) >= 700 } {
+				set all_num "t"
+			}
+			if { $count_all_chr($p) >= 800 } {
+				set all_num "u"
+			}
+			if { $count_all_chr($p) >= 900 } {
+				set all_num "v"
+			}
+			if { $count_all_chr($p) >= 1000 } {
+				set all_num "w"
 			}
 		}
 		append string_A_fract $fract_A
