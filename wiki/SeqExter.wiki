@@ -44,4 +44,12 @@ example TrimL output:
 056969  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGTCCAGTTGTAACAATCAAACGCAG------------------------------------------    __3__
                                                   ^
 __________________________________________________I_ putative SNP position 
+                                                  I
+                                                  V
+******  _A_     00000X000XX000000000XX00X00000XX00000X00000XX0XX00XXX000X0000X0XX0X0X000019X00X000003---------------
+******  _T_     0X0X000X000XX0X0X0X0000000X0X000X060000XX0X00000X000000000X00000000000000800X00X00905---------------
+******  _G_     00X0X0X0X000000X0X0X00X0000X0X000X0000X00X000000000000X00X0X00X00X0X000001100X00000X0---------------
+******  _C_     X000000000000X000000000X0X000000004XX00000000X000X000X0X0000X00000000XXXX0000000XX103---------------
+******  ALL     qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpppppppppppppoooooooooooooooonnnmmlkkkjjjjhfeddccbaaa4---------------
+(consensus stat info in *.UniSeqs file)
 }}}
