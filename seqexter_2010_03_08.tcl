@@ -36,6 +36,7 @@ proc Set_Global_Parameters { query_input } {
 	global live_string			; # inpuit stdin
 	global loop_status			; # multiple or single iteration
 	global max_align_length		; # alignment length - temporary solution
+	global max_align_index		; # it is expr max_align_length - 1
 	global max_array_item		; # size of the array with strings from input file
 	global max_query_item		; # size of the array with query strings
 	global mod_value			; # delay in next step in milliseconds to read debugging messages
@@ -144,6 +145,7 @@ proc SeqExter {argv} {
 	global interactive_mode
 	global loop_status
 	global max_align_length
+	global max_align_index
 	global mod_value
 	global proc_id
 	global query_type
@@ -159,6 +161,8 @@ proc SeqExter {argv} {
 	set max_align_length  [lindex $argv 5]
 	set proc_id           [lindex $argv 6]
 	set loop_status       [lindex $argv 7]
+	
+	set max_align_index [expr $max_align_length - 1]
 	
 	Set_Global_Parameters $query_input
 	
@@ -260,8 +264,8 @@ proc Create_Query_Data_Array { q current_query } {
 	set query_array($q) $current_query
 	set max_query_item $q
 	
-	set log_message " $q query strings processed "
-	Print_Log_Message $log_message
+	# set log_message " $q query strings processed "
+	# Print_Log_Message $log_message
 	
 }
 
@@ -489,6 +493,12 @@ proc Run_Proc_01 { } {
 	
 	Process_Consensus
 	
+	### COUNT ALL MATCHES - FORWARD and REVERSE ###
+	set query_length [string length $query_string]
+	set dummy_dash [string repeat "-" $query_length]
+	set query_summary_log "$query_count\tALL\t$dummy_dash\t$consensus_array_Count"
+	Print_Query_Sumary $query_summary_log
+	
 }
 
 proc Process_Consensus { } {
@@ -497,9 +507,15 @@ proc Process_Consensus { } {
 	global consensus_slist_TrimL
 	global consensus_slist_TrimR
 	global max_array_item
+	global query_count
+	global max_align_length
+	
+	set query_index_string "__$query_count\__"
 	
 	set dummy_id_len [string length $max_array_item]
-	set dummy_id [string repeat "*" $dummy_id_len]
+	set dummy_id [string repeat "." $dummy_id_len]
+	set dummy_star [string repeat "*" $dummy_id_len]
+	set dummy_seqs [string repeat "*" $max_align_length]
 	
 	puts "   PRINT   CONSENSUS   "
 	
@@ -518,19 +534,19 @@ proc Process_Consensus { } {
 	set fract_C_string [lindex $current_consensus_L 3]
 	set all_ATGC_count [lindex $current_consensus_L 4]
 	
-	puts "$dummy_id\t_A_\t$fract_A_string" 
-	puts "$dummy_id\t_T_\t$fract_T_string" 
-	puts "$dummy_id\t_G_\t$fract_G_string" 
-	puts "$dummy_id\t_C_\t$fract_C_string" 
-	puts "$dummy_id\tALL\t$all_ATGC_count"
+	puts "$dummy_id\t_A_\t$fract_A_string\t$query_index_string" 
+	puts "$dummy_id\t_T_\t$fract_T_string\t$query_index_string" 
+	puts "$dummy_id\t_G_\t$fract_G_string\t$query_index_string" 
+	puts "$dummy_id\t_C_\t$fract_C_string\t$query_index_string" 
+	puts "$dummy_id\tALL\t$all_ATGC_count\t$query_index_string" 
 	
-	puts $file_out5 "$dummy_id\t_A_\t$fract_A_string" 
-	puts $file_out5 "$dummy_id\t_T_\t$fract_T_string" 
-	puts $file_out5 "$dummy_id\t_G_\t$fract_G_string" 
-	puts $file_out5 "$dummy_id\t_C_\t$fract_C_string" 
-	puts $file_out5 "$dummy_id\tALL\t$all_ATGC_count"
+	puts $file_out5 "$dummy_id\t_A_\t$fract_A_string\t$query_index_string" 
+	puts $file_out5 "$dummy_id\t_T_\t$fract_T_string\t$query_index_string" 
+	puts $file_out5 "$dummy_id\t_G_\t$fract_G_string\t$query_index_string" 
+	puts $file_out5 "$dummy_id\t_C_\t$fract_C_string\t$query_index_string" 
+	puts $file_out5 "$dummy_id\tALL\t$all_ATGC_count\t$query_index_string" 
 	
-	puts $file_out5 "****************************************************************************"
+	puts $file_out5 "$dummy_star\t***\t$dummy_seqs\t$query_index_string"
 	puts $file_out5 ""
 	
 	### puts "  TRIM RIGHT CONSENSUS  "
@@ -796,8 +812,9 @@ proc Run_String_Analysis_01 { } {
 			set trim_left  [Get_Left_Trimmed_String  $current_string $find_query $query_length]
 			set trim_right [Get_Right_Trimmed_String $current_string $find_query $query_length]
 			### ALIGNMENT DATA STRING ###
-			set aln_string_l "$id\t$dna_string_direction\t$trim_left\t__$query_count\__"
-			set aln_string_r "$id\t$dna_string_direction\t$trim_right\t__$query_count\__"
+			set query_index_string "__$query_count\__"
+			set aln_string_l "$id\t$dna_string_direction\t$trim_left\t$query_index_string"
+			set aln_string_r "$id\t$dna_string_direction\t$trim_right\t$query_index_string"
 			### TRIMMED ALIGNMENT ARRAY ###
 			set trimL_query_array($id) $aln_string_l
 			set trimR_query_array($id) $aln_string_r
@@ -846,6 +863,7 @@ proc Get_Left_Trimmed_String  { current_string query_match query_length } {
 	
 	global dna_string_direction
 	global max_align_length
+	global max_align_index
 	
 	### CASE 1 - FORWARD direction
 	if { $dna_string_direction == "FRW" } {
@@ -868,6 +886,8 @@ proc Get_Left_Trimmed_String  { current_string query_match query_length } {
 		set left_length [string length $trim_left]
 	}
 	
+	### LIMIT ALIGNMENT LENGTH TO MAX FIXED VALUE ###
+	set trim_left [string range $trim_left 0 $max_align_index]
 	return $trim_left
 	
 }
@@ -876,6 +896,7 @@ proc Get_Right_Trimmed_String { current_string query_match query_length } {
 	
 	global dna_string_direction
 	global max_align_length
+	global max_align_index
 	
 	### CASE 1 - FORWARD direction
 	if { $dna_string_direction == "FRW" } {
@@ -898,6 +919,7 @@ proc Get_Right_Trimmed_String { current_string query_match query_length } {
 		set right_length [string length $trim_right]
 	}
 	
+	set trim_right [string range $trim_right [expr $right_length - $max_align_index - 1] end]
 	return $trim_right
 	
 }
