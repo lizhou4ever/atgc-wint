@@ -245,6 +245,9 @@ proc Read_Query_File { } {
 	
 	set mod_q_val 100 
 	
+	puts "                     "
+	puts "  READ  QUERY  FILE  "
+	
 	set q 0 
 	while {[gets $file_in_2 current_line] >= 0} {
 		incr q
@@ -253,6 +256,7 @@ proc Read_Query_File { } {
 		Check_Mod_Status $q $q $mod_q_val
 	}
 	close $file_in_2
+	puts "                     "
 	
 }
 
@@ -491,19 +495,20 @@ proc Run_Proc_01 { } {
 		Run_String_Analysis_01			; # Second Round of Search REVERSE DNA string
 	}
 	
-	Process_Consensus
-	
 	### COUNT ALL MATCHES - FORWARD and REVERSE ###
 	set query_length [string length $query_string]
 	set dummy_dash [string repeat "-" $query_length]
 	set query_summary_log "$query_count\tALL\t$dummy_dash\t$consensus_array_Count"
 	Print_Query_Sumary $query_summary_log
 	
+	Process_Consensus $query_length
+	
 }
 
-proc Process_Consensus { } {
+proc Process_Consensus { query_length } {
 	
 	global file_out5
+	global file_out6
 	global consensus_slist_TrimL
 	global consensus_slist_TrimR
 	global max_array_item
@@ -513,11 +518,10 @@ proc Process_Consensus { } {
 	set query_index_string "__$query_count\__"
 	
 	set dummy_id_len [string length $max_array_item]
-	set dummy_id [string repeat "." $dummy_id_len]
+	set dummy_id   [string repeat "." $dummy_id_len]
 	set dummy_star [string repeat "*" $dummy_id_len]
+	set dummy_cons [string repeat "#" $dummy_id_len]
 	set dummy_seqs [string repeat "*" $max_align_length]
-	
-	puts "   PRINT   CONSENSUS   "
 	
 	puts "  TRIM LEFT CONSENSUS  "
 	set consensus_slist_TrimL [lsort $consensus_slist_TrimL]
@@ -526,28 +530,50 @@ proc Process_Consensus { } {
 		puts $item
 	}
 	
-	set current_consensus_L [Alignment_Analysis $consensus_slist_TrimL]
+	set current_consensus_L [Alignment_Analysis $consensus_slist_TrimL $query_length]
 	
 	set fract_A_string [lindex $current_consensus_L 0]
 	set fract_T_string [lindex $current_consensus_L 1]
 	set fract_G_string [lindex $current_consensus_L 2]
 	set fract_C_string [lindex $current_consensus_L 3]
-	set all_ATGC_count [lindex $current_consensus_L 4]
+	set fract_N_string [lindex $current_consensus_L 4]
+	set all_ATGC_count [lindex $current_consensus_L 5]
+	set atgc_Consensus [lindex $current_consensus_L 6]
+	set atgc_Quality   [lindex $current_consensus_L 7]
 	
 	puts "$dummy_id\t_A_\t$fract_A_string\t$query_index_string" 
 	puts "$dummy_id\t_T_\t$fract_T_string\t$query_index_string" 
 	puts "$dummy_id\t_G_\t$fract_G_string\t$query_index_string" 
 	puts "$dummy_id\t_C_\t$fract_C_string\t$query_index_string" 
+	puts "$dummy_id\t_N_\t$fract_N_string\t$query_index_string" 
 	puts "$dummy_id\tALL\t$all_ATGC_count\t$query_index_string" 
+	puts "$dummy_star\t***\t$dummy_seqs\t$query_index_string"
+	puts "$dummy_cons\tCNS\t$atgc_Consensus\t$query_index_string"
+	puts "$dummy_cons\tQLT\t$atgc_Quality\t$query_index_string"
 	
 	puts $file_out5 "$dummy_id\t_A_\t$fract_A_string\t$query_index_string" 
 	puts $file_out5 "$dummy_id\t_T_\t$fract_T_string\t$query_index_string" 
 	puts $file_out5 "$dummy_id\t_G_\t$fract_G_string\t$query_index_string" 
 	puts $file_out5 "$dummy_id\t_C_\t$fract_C_string\t$query_index_string" 
+	puts $file_out5 "$dummy_id\t_N_\t$fract_N_string\t$query_index_string" 
 	puts $file_out5 "$dummy_id\tALL\t$all_ATGC_count\t$query_index_string" 
-	
 	puts $file_out5 "$dummy_star\t***\t$dummy_seqs\t$query_index_string"
+	puts $file_out5 "$dummy_cons\tCNS\t$atgc_Consensus\t$query_index_string"
+	puts $file_out5 "$dummy_cons\tQLT\t$atgc_Quality\t$query_index_string"
 	puts $file_out5 ""
+	puts $file_out5 ""
+	
+	puts $file_out6 "$dummy_id\t_A_\t$fract_A_string\t$query_index_string" 
+	puts $file_out6 "$dummy_id\t_T_\t$fract_T_string\t$query_index_string" 
+	puts $file_out6 "$dummy_id\t_G_\t$fract_G_string\t$query_index_string" 
+	puts $file_out6 "$dummy_id\t_C_\t$fract_C_string\t$query_index_string" 
+	puts $file_out6 "$dummy_id\t_N_\t$fract_N_string\t$query_index_string" 
+	puts $file_out6 "$dummy_id\tALL\t$all_ATGC_count\t$query_index_string" 
+	puts $file_out6 "$dummy_star\t***\t$dummy_seqs\t$query_index_string"
+	puts $file_out6 "$dummy_cons\tCNS\t$atgc_Consensus\t$query_index_string"
+	puts $file_out6 "$dummy_cons\tQLT\t$atgc_Quality\t$query_index_string"
+	puts $file_out6 ""
+	puts $file_out6 ""
 	
 	### puts "  TRIM RIGHT CONSENSUS  "
 	### set consensus_slist_TrimR [lsort $consensus_slist_TrimR]
@@ -556,10 +582,11 @@ proc Process_Consensus { } {
 	### { }
 	puts "    *CONSENSUS*    "
 	puts "                   "
+	puts "                   "
 	
 }
 
-proc Alignment_Analysis { current_alignment } {
+proc Alignment_Analysis { current_alignment query_length } {
 	
 	global max_align_length
 	global consensus_array_Count
@@ -571,6 +598,7 @@ proc Alignment_Analysis { current_alignment } {
 		set count_T_items($p) 0 
 		set count_G_items($p) 0 
 		set count_C_items($p) 0 
+		set count_N_items($p) 0 
 		set count_all_chr($p) 0 
 		incr p
 	}
@@ -600,6 +628,11 @@ proc Alignment_Analysis { current_alignment } {
 				incr count_C_items($p)
 				incr count_all_chr($p)
 			}
+			if { $current_item != "A" && $current_item != "T" && $current_item != "G" && $current_item != "C" && $current_item != "-"} {
+				incr count_N_items($p)
+				incr count_all_chr($p)
+				puts " WARNING:  non-ATGC CHAR WAS FOUND !!! "
+			}
 			incr p
 		}
 		incr s
@@ -609,7 +642,10 @@ proc Alignment_Analysis { current_alignment } {
 	set string_T_fract {}
 	set string_G_fract {}
 	set string_C_fract {}
+	set string_N_fract {}
 	set string_all_num {}
+	set consensus_atgc {}
+	set consensus_qual {}
 	
 	set p 0 
 	while { $p < $max_align_length } {
@@ -618,25 +654,65 @@ proc Alignment_Analysis { current_alignment } {
 			set fract_T "-"
 			set fract_G "-"
 			set fract_C "-"
+			set fract_N "-"
 			set all_num "-"
+			set cons_ch "-"		; # CONSENSUS CHAR
+			set cons_ql "."		; # CONSENSUS QUAL
 		}
 		if { $count_all_chr($p) > 0 } {
 			set fract_A [expr round(($count_A_items($p))*10.0/$count_all_chr($p))]
 			set fract_T [expr round(($count_T_items($p))*10.0/$count_all_chr($p))]
 			set fract_G [expr round(($count_G_items($p))*10.0/$count_all_chr($p))]
 			set fract_C [expr round(($count_C_items($p))*10.0/$count_all_chr($p))]
+			set fract_N [expr round(($count_N_items($p))*10.0/$count_all_chr($p))]
+			set cons_ch "n"
+			set cons_ql "-"
 			
+			### CONSENSUS BY FRACTION ###
+			if { $fract_A >= 6 } {
+				set cons_ch "a"
+			}
+			if { $fract_T >= 6 } {
+				set cons_ch "t"
+			}
+			if { $fract_G >= 6 } {
+				set cons_ch "g"
+			}
+			if { $fract_C >= 6 } {
+				set cons_ch "c"
+			}
+			
+			### CONSENSUS QUALITY ###
+			
+			if { $fract_A >= 8 && $count_all_chr($p) >= 3 } {
+				set cons_ql "+"
+			}
+			if { $fract_T >= 8 && $count_all_chr($p) >= 3 } {
+				set cons_ql "+"
+			}
+			if { $fract_G >= 8 && $count_all_chr($p) >= 3 } {
+				set cons_ql "+"
+			}
+			if { $fract_C >= 8 && $count_all_chr($p) >= 3 } {
+				set cons_ql "+"
+			}
+			
+			### ABSOLUTE DOMINATION ###
 			if { $fract_A == 10 } {
 				set fract_A "X"
+				set cons_ch "A"
 			}
 			if { $fract_T == 10 } {
 				set fract_T "X"
+				set cons_ch "T"
 			}
 			if { $fract_G == 10 } {
 				set fract_G "X"
+				set cons_ch "G"
 			}
 			if { $fract_C == 10 } {
 				set fract_C "X"
+				set cons_ch "C"
 			}
 			
 			### COUNT ALL A T G C CHARS ###
@@ -716,21 +792,22 @@ proc Alignment_Analysis { current_alignment } {
 		append string_T_fract $fract_T
 		append string_G_fract $fract_G
 		append string_C_fract $fract_C
+		append string_N_fract $fract_N
 		append string_all_num $all_num
+		append consensus_atgc $cons_ch
+		append consensus_qual $cons_ql
 		incr p
 	}
 	
 	set list_of_ATGC_fractions {}
-	# puts $string_A_fract
 	set list_of_ATGC_fractions [lappend list_of_ATGC_fractions $string_A_fract]
-	# puts $string_T_fract
 	set list_of_ATGC_fractions [lappend list_of_ATGC_fractions $string_T_fract]
-	# puts $string_G_fract
 	set list_of_ATGC_fractions [lappend list_of_ATGC_fractions $string_G_fract]
-	# puts $string_C_fract
 	set list_of_ATGC_fractions [lappend list_of_ATGC_fractions $string_C_fract]
-	# puts $string_all_num
+	set list_of_ATGC_fractions [lappend list_of_ATGC_fractions $string_N_fract]
 	set list_of_ATGC_fractions [lappend list_of_ATGC_fractions $string_all_num]
+	set list_of_ATGC_fractions [lappend list_of_ATGC_fractions $consensus_atgc]
+	set list_of_ATGC_fractions [lappend list_of_ATGC_fractions $consensus_qual]
 	
 	set current_consensus_L $list_of_ATGC_fractions
 	return $current_consensus_L
