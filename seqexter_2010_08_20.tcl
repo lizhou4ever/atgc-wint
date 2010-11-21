@@ -160,7 +160,6 @@ proc SeqExter {argv} {
 	set query_type        [lindex $argv 2]
 	set query_input       [lindex $argv 3]
 	set mod_value         [lindex $argv 4]
-	### set sleep_time    [lindex $argv 5]
 	set max_align_length  [lindex $argv 5]
 	set proc_id           [lindex $argv 6]
 	set loop_status       [lindex $argv 7]
@@ -522,8 +521,14 @@ proc Start_New_Seqexter_Loop { } {
 		Run_Proc_01
 	}
 	if { $new_seqs_key == "NO_NEW_KEY_FOUND" } {
-		break
+		### break
+		New_Key_Loop_Terminator
 	}
+}
+
+proc New_Key_Loop_Terminator { } {
+	puts " ... EXIT ... "
+	exit
 }
 
 proc Process_Consensus { query_length } {
@@ -610,6 +615,7 @@ proc Process_Consensus { query_length } {
 	
 	### NEW SEQEXTER KEY ###
 	set old_key_len [string length $query_string]
+	regsub -all {\..*} $atgc_Quality "" plus_quality_string
 	regsub -all {\-.*} $atgc_Quality "" plus_quality_string
 	set plus_quality_length [string length $plus_quality_string]
 	if { $plus_quality_length > $old_key_len } {
@@ -834,6 +840,42 @@ proc Alignment_Analysis { current_alignment query_length } {
 			}
 			if { $count_all_chr($p) >= 1000 } {
 				set all_num "w"
+			}
+			if { $count_all_chr($p) >= 2000 } {
+				set all_num "O"
+			}
+			if { $count_all_chr($p) >= 3000 } {
+				set all_num "P"
+			}
+			if { $count_all_chr($p) >= 4000 } {
+				set all_num "Q"
+			}
+			if { $count_all_chr($p) >= 5000 } {
+				set all_num "R"
+			}
+			if { $count_all_chr($p) >= 6000 } {
+				set all_num "S"
+			}
+			if { $count_all_chr($p) >= 7000 } {
+				set all_num "T"
+			}
+			if { $count_all_chr($p) >= 8000 } {
+				set all_num "U"
+			}
+			if { $count_all_chr($p) >= 9000 } {
+				set all_num "V"
+			}
+			if { $count_all_chr($p) >= 10000 } {
+				set all_num "W"
+			}
+			if { $count_all_chr($p) >= 30000 } {
+				set all_num "X"
+			}
+			if { $count_all_chr($p) >= 60000 } {
+				set all_num "Y"
+			}
+			if { $count_all_chr($p) >= 100000 } {
+				set all_num "Z"
 			}
 		}
 		append string_A_fract $fract_A
