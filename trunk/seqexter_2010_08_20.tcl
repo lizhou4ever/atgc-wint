@@ -30,6 +30,7 @@
 proc Set_Global_Parameters { query_input } {
 	
 	global basic_data_array		; # array with strings from input file
+	global consensus_chain		; # consensus - chain summary of seeded alignment
 	global dna_string_direction	; # direction of DNA string - FORWARD or REVERSE
 	global interactive_mode		; # interactive or command line query input
 	global initial_time			; # program start time
@@ -83,7 +84,7 @@ proc Set_Global_Parameters { query_input } {
 	
 	set query_count 0 
 	
-	### set max_align_length 85 
+	set consensus_chain ""
 	
 	set sleep_time 360 
 	
@@ -468,6 +469,7 @@ proc Run_Proc_01 { } {
 	global consensus_array_TrimR
 	global consensus_slist_TrimL	; # super-list of array items
 	global consensus_slist_TrimR
+	global consensus_chain
 	global loop_status
 	global query_count
 	global query_string
@@ -484,12 +486,18 @@ proc Run_Proc_01 { } {
 	if { $reverse_compl == "FALSE" } {
 		incr query_count
 		set dna_string_direction "FRW"
+		if { $query_count == 1 } {
+			set consensus_chain $query_string
+		}
 		Run_String_Analysis_01
 	}
 	
 	if { $reverse_compl == "TRUE" } {
 		incr query_count
 		set dna_string_direction "FRW"
+		if { $query_count == 1 } {
+			set consensus_chain $query_string
+		}
 		Run_String_Analysis_01			; # First Round of Search - FORWARD DNA string
 		set string_frw $query_string
 		set string_rev_compl [Reverse_Complement_String $string_frw]
@@ -533,6 +541,8 @@ proc New_Key_Loop_Terminator { } {
 
 proc Process_Consensus { query_length } {
 	
+	global consensus_chain
+	global dna_string_direction
 	global file_out5
 	global file_out6
 	global consensus_slist_TrimL
@@ -616,15 +626,32 @@ proc Process_Consensus { query_length } {
 	### NEW SEQEXTER KEY ###
 	set old_key_len [string length $query_string]
 	regsub -all {\..*} $atgc_Quality "" plus_quality_string
-	regsub -all {\-.*} $atgc_Quality "" plus_quality_string
+	regsub -all {\-.*} $plus_quality_string "" plus_quality_string
+	# regsub -all {\-.*} $atgc_Quality "" plus_quality_string
 	set plus_quality_length [string length $plus_quality_string]
 	if { $plus_quality_length > $old_key_len } {
+		### DEFINE NEW KEY ###
 		set key_start [expr $plus_quality_length - $old_key_len]
 		set key_end [expr $plus_quality_length - 1]
 		set new_seqs_key [string range $atgc_Consensus $key_start $key_end]
 		if { $upper_case == "TRUE" } {
 			set new_seqs_key [string toupper $new_seqs_key]
 		}
+		### CONSENSUS APPEND ###
+		set cons_ext_start [expr $old_key_len - 0]
+		set cons_ext_end [expr $plus_quality_length - 1]
+		set new_ext_tail [string range $atgc_Consensus $cons_ext_start $cons_ext_end]
+		set consensus_chain "$consensus_chain$new_ext_tail"
+		### PRINT DATA IN FILE ###
+		puts $file_out6 "                        "
+		puts $file_out6 ">CONSENSUS$query_index_string"
+		puts $file_out6 $consensus_chain
+		puts $file_out6 "                        "
+		### PRINT DATA ON SCREEN ###
+		puts "                        "
+		puts ">CONSENSUS$query_index_string"
+		puts $consensus_chain
+		puts "                        "
 	}
 	if { $plus_quality_length <= $old_key_len } {
 		set new_seqs_key "NO_NEW_KEY_FOUND"
