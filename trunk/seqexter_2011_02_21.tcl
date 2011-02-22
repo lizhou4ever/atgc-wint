@@ -40,6 +40,7 @@ proc Set_Global_Parameters { query_input } {
 	global max_align_index		; # it is expr max_align_length - 1
 	global max_array_item		; # size of the array with strings from input file
 	global max_query_item		; # size of the array with query strings
+	global max_search_cycle		; # max number of search cycles
 	global max_seqs_number		; # max number of sequences to load into memory
 	global mod_value			; # delay in next step in milliseconds to read debugging messages
 	global proc_id				; # procedure ID
@@ -94,6 +95,8 @@ proc Set_Global_Parameters { query_input } {
 	
 	set max_seqs_number 120000000		; # one hundred twenty million : 120M
 	
+	set max_search_cycle 10000			; # ten thousand : 10K
+	
 }
 
 proc Set_Dialog_Commands { } {
@@ -124,6 +127,22 @@ proc Run_Selected_Proc { } {
 	
 	if { $proc_id == "PROC_02" } {
 		Run_Proc_02
+	}
+	
+}
+
+proc Run_Nested_Search { } {
+	
+	global proc_id
+	global max_search_cycle
+	global query_string
+	
+	set c 1
+	while { $c <= $max_search_cycle } {
+		if { $proc_id == "PROC_01" } {
+			Run_Proc_01
+		}
+		incr c
 	}
 	
 }
@@ -186,8 +205,12 @@ proc SeqExter {argv} {
 		Read_StdIn_Data
 	}
 	
-	if { $interactive_mode == "FALSE" && $query_file == "___none___" } {
+	if { $interactive_mode == "FALSE" && $query_file == "___none___" && $loop_status == "LOOP_SINGLE" } {
 		Run_Selected_Proc
+	}
+	
+	if { $interactive_mode == "FALSE" && $query_file == "___none___" && $loop_status == "LOOP_NESTED" } {
+		Run_Nested_Search
 	}
 	
 	if { $interactive_mode == "FALSE" && $query_file != "___none___" } {
@@ -532,8 +555,8 @@ proc Start_New_Seqexter_Loop { } {
 	global new_seqs_key
 
 	if { $new_seqs_key != "NO_NEW_KEY_FOUND" } {
-	set query_string $new_seqs_key
-		Run_Proc_01
+		set query_string $new_seqs_key
+		### Run_Proc_01
 	}
 	if { $new_seqs_key == "NO_NEW_KEY_FOUND" } {
 		### break
