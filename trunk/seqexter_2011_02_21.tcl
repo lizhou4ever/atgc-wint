@@ -657,7 +657,9 @@ proc Process_Consensus { query_length } {
 	set old_key_len [string length $query_string]
 	regsub -all {\..*} $atgc_Quality "" plus_quality_string
 	regsub -all {\-.*} $plus_quality_string "" plus_quality_string
-	# regsub -all {\-.*} $atgc_Quality "" plus_quality_string
+	# regsub -all {\@.*} $plus_quality_string "" plus_quality_string
+	# regsub -all {\!.*} $plus_quality_string "" plus_quality_string
+	# regsub -all {\?.*} $plus_quality_string "" plus_quality_string
 	set plus_quality_length [string length $plus_quality_string]
 	if { $plus_quality_length > $old_key_len } {
 		### DEFINE NEW KEY ###
@@ -783,46 +785,46 @@ proc Alignment_Analysis { current_alignment query_length } {
 			set cons_ql "-"
 			
 			### CONSENSUS BY FRACTION ###
-			if { $fract_A >= 6 } {
+			if { $fract_A >= 5 } {
 				set cons_ch "a"
 			}
-			if { $fract_T >= 6 } {
+			if { $fract_T >= 5 } {
 				set cons_ch "t"
 			}
-			if { $fract_G >= 6 } {
+			if { $fract_G >= 5 } {
 				set cons_ch "g"
 			}
-			if { $fract_C >= 6 } {
+			if { $fract_C >= 5 } {
 				set cons_ch "c"
 			}
 			
 			####### CONSENSUS QUALITY ######
 			
 			### MAYBE 50% AND HIGHER ###
-			if { $fract_A >= 5 && $count_all_chr($p) >= 40 } {
+			if { $fract_A >= 5 && $count_all_chr($p) >= 10 } {
 				set cons_ql "?"
 			}
-			if { $fract_T >= 5 && $count_all_chr($p) >= 40 } {
+			if { $fract_T >= 5 && $count_all_chr($p) >= 10 } {
 				set cons_ql "?"
 			}
-			if { $fract_G >= 5 && $count_all_chr($p) >= 40 } {
+			if { $fract_G >= 5 && $count_all_chr($p) >= 10 } {
 				set cons_ql "?"
 			}
-			if { $fract_C >= 5 && $count_all_chr($p) >= 40 } {
+			if { $fract_C >= 5 && $count_all_chr($p) >= 10 } {
 				set cons_ql "?"
 			}
 			
 			### WEAK 60% AND HIGHER ###
-			if { $fract_A >= 6 && $count_all_chr($p) >= 20 } {
+			if { $fract_A >= 6 && $count_all_chr($p) >= 10 } {
 				set cons_ql "!"
 			}
-			if { $fract_T >= 6 && $count_all_chr($p) >= 20 } {
+			if { $fract_T >= 6 && $count_all_chr($p) >= 10 } {
 				set cons_ql "!"
 			}
-			if { $fract_G >= 6 && $count_all_chr($p) >= 20 } {
+			if { $fract_G >= 6 && $count_all_chr($p) >= 10 } {
 				set cons_ql "!"
 			}
-			if { $fract_C >= 6 && $count_all_chr($p) >= 20 } {
+			if { $fract_C >= 6 && $count_all_chr($p) >= 10 } {
 				set cons_ql "!"
 			}
 			
