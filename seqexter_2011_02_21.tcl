@@ -583,6 +583,7 @@ proc Process_Consensus { query_length } {
 	global max_align_length
 	global new_seqs_key
 	global upper_case
+	global loop_status
 	
 	set query_index_string "__$query_count\__"
 	
@@ -657,9 +658,10 @@ proc Process_Consensus { query_length } {
 	set old_key_len [string length $query_string]
 	regsub -all {\..*} $atgc_Quality "" plus_quality_string
 	regsub -all {\-.*} $plus_quality_string "" plus_quality_string
+	regsub -all {\?.*} $plus_quality_string "" plus_quality_string	; # WEAK CONDITION
+	# regsub -all {\!.*} $plus_quality_string "" plus_quality_string	; # MEDIUM CONDITION
 	# regsub -all {\@.*} $plus_quality_string "" plus_quality_string
-	# regsub -all {\!.*} $plus_quality_string "" plus_quality_string
-	# regsub -all {\?.*} $plus_quality_string "" plus_quality_string
+	
 	set plus_quality_length [string length $plus_quality_string]
 	if { $plus_quality_length > $old_key_len } {
 		### DEFINE NEW KEY ###
@@ -678,27 +680,31 @@ proc Process_Consensus { query_length } {
 		set consensus_chain_length [string length $consensus_chain]
 		set consensus_chain_gain [string length $new_ext_tail]
 		### PRINT DATA IN FILE ###
-		puts $file_out6 "                        "
-		puts $file_out6 ">CONSENSUS$query_index_string  Length: $consensus_chain_length \[gain: $consensus_chain_gain\] "
-		puts $file_out6 $consensus_chain
-		puts $file_out6 "                        "
-		### PRINT DATA ON SCREEN ###
-		puts "                        "
-		puts ">CONSENSUS$query_index_string  Length: $consensus_chain_length \[gain: $consensus_chain_gain\] "
-		puts $consensus_chain
-		puts "                        "
+		if { $loop_status == "LOOP_NESTED" } {
+			puts $file_out6 "                        "
+			puts $file_out6 ">CONSENSUS$query_index_string  Length: $consensus_chain_length \[gain: $consensus_chain_gain\] "
+			puts $file_out6 $consensus_chain
+			puts $file_out6 "                        "
+			### PRINT DATA ON SCREEN ###
+			puts "                        "
+			puts ">CONSENSUS$query_index_string  Length: $consensus_chain_length \[gain: $consensus_chain_gain\] "
+			puts $consensus_chain
+			puts "                        "
+		}
 	}
-	if { $plus_quality_length <= $old_key_len } {
-		set new_seqs_key "NO_NEW_KEY_FOUND"
+	if { $loop_status == "LOOP_NESTED" } {
+		if { $plus_quality_length <= $old_key_len } {
+			set new_seqs_key "NO_NEW_KEY_FOUND"
+		}
+		puts "     *NEW KEY*     "
+		puts $new_seqs_key
+		puts "                   "
+		
+		puts $file_out6 "                        "
+		puts $file_out6 "OLD KEY:   $query_string"
+		puts $file_out6 "NEW KEY:   $new_seqs_key"
+		puts $file_out6 "                        "
 	}
-	puts "     *NEW KEY*     "
-	puts $new_seqs_key
-	puts "                   "
-	
-	puts $file_out6 "                        "
-	puts $file_out6 "OLD KEY:   $query_string"
-	puts $file_out6 "NEW KEY:   $new_seqs_key"
-	puts $file_out6 "                        "
 	
 }
 
