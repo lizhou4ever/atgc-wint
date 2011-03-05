@@ -587,6 +587,7 @@ proc Process_Consensus { query_length } {
 	global new_seqs_key
 	global upper_case
 	global loop_status
+	global reverse_compl
 	
 	set query_index_string "__$query_count\__"
 	
@@ -657,14 +658,26 @@ proc Process_Consensus { query_length } {
 	puts "                   "
 	puts "                   "
 	
-	### NEW SEQEXTER KEY ###
+	#####################################################################################
+	######################## TRIMMING VARIATIONS  START #################################
+	### TRIMMING FOR LOW QUALITY REGION SHOULD BE ADJUSTED FOR ANY PARTICULAR PROJECT ###
 	set old_key_len [string length $query_string]
 	regsub -all {\..*} $atgc_Quality "" plus_quality_string
 	regsub -all {\-.*} $plus_quality_string "" plus_quality_string
-	regsub -all {\?.*} $plus_quality_string "" plus_quality_string	; # WEAK CONDITION
+	# regsub -all {\?.*} $plus_quality_string "" plus_quality_string	; # WEAK CONDITION
+	regsub -all {\?\?.*} $plus_quality_string "" plus_quality_string
 	# regsub -all {\!.*} $plus_quality_string "" plus_quality_string	; # MEDIUM CONDITION
+	# regsub -all {\!\!.*} $plus_quality_string "" plus_quality_string
+	regsub -all {\!\!\!.*} $plus_quality_string "" plus_quality_string
 	# regsub -all {\@.*} $plus_quality_string "" plus_quality_string
+	regsub -all {\?\!\!.*} $plus_quality_string "" plus_quality_string
+	regsub -all {\!\?\!.*} $plus_quality_string "" plus_quality_string
+	regsub -all {\!\!\?.*} $plus_quality_string "" plus_quality_string
+	regsub -all {\?\!\?.*} $plus_quality_string "" plus_quality_string
+	######################## END OF TRIMMING VARIATIONS #################################
+	#####################################################################################
 	
+	### NEW SEQEXTER KEY ###
 	set plus_quality_length [string length $plus_quality_string]
 	if { $plus_quality_length > $old_key_len } {
 		### DEFINE NEW KEY ###
@@ -712,7 +725,10 @@ proc Process_Consensus { query_length } {
 		puts $new_seqs_key
 		puts "                   "
 		
-		set old_key_string_frw [Reverse_Complement_String $query_string]
+		set old_key_string_frw $query_string
+		if { $reverse_compl == "TRUE" } {
+			set old_key_string_frw [Reverse_Complement_String $query_string]
+		}
 		
 		puts $file_out6 "                        "
 		### puts $file_out6 "OLD KEY:   $query_string"
@@ -875,6 +891,20 @@ proc Alignment_Analysis { current_alignment query_length } {
 			}
 			if { $fract_C >= 8 && $count_all_chr($p) >= 3 } {
 				set cons_ql "+"
+			}
+			
+			### CONFIDENT 90% AND HIGHER ###
+			if { $fract_A == 10 && $count_all_chr($p) >= 3 } {
+				set cons_ql "X"
+			}
+			if { $fract_T == 10 && $count_all_chr($p) >= 3 } {
+				set cons_ql "X"
+			}
+			if { $fract_G == 10 && $count_all_chr($p) >= 3 } {
+				set cons_ql "X"
+			}
+			if { $fract_C == 10 && $count_all_chr($p) >= 3 } {
+				set cons_ql "X"
 			}
 			
 			### ABSOLUTE DOMINATION ###
