@@ -22,7 +22,7 @@ example for multiple query strings in file:
 
 == Alignment depth one letter code ==
 
-|| *depth* || *4L-code ||
+|| *depth range* || *1L-code* ||
 || 1 || 1 ||
 || 2 || 2 ||
 || 3 || 3 ||
@@ -67,3 +67,14 @@ example for multiple query strings in file:
 || 30000 - 60000 || X ||
 || 60000 - 100000 || Y ||
 || 100000 - ..... || Z ||
+
+== Consensus default quality scores ==
+
+|| *identity (IDNT)* || *depth cutoff* || *Q-code* ||
+|| 1.0 = IDNT || 3 || X ||
+|| 0.8 <= IDNT || 3 || + ||
+|| 0.7 <= IDNT || 10 || @ ||
+|| 0.6 <= IDNT || 10 || ! ||
+|| 0.5 <= IDNT|| 10 || ? ||
+|| 0.5 > IDNT || 1 || - ||
+|| NO DATA || - || . ||
