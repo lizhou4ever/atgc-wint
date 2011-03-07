@@ -1,55 +1,60 @@
 #labels Featured
 #SeqExter - DNA string search and alignment
 
-= SeqExter Usage
+== SeqExter Usage ==
 
 {{{
 Program usage:
+
+Program usage:
 Input_File[0],  Output_File[1],  Query_Input_Type[2],  String_or_FileName[3],
-   Mod_Val[4],  Max_Align_Len[5],  Procedure_ID[6],  Number_of_Iterations[7]
-...
+ Max_Seqs_Load[4],  Align_Len[5],  Procedure_ID[6],  Number_of_Iterations[7]
+
+example to run the program in the interactive mode:
+ my_input   my_output   STRING   _STDIN_   12000000  120    PROC_01   LOOP_SINGLE
+
+example for the single string query:
+ my_input   my_output   STRING   ATGCATGC  12000000  120    PROC_01   LOOP_NESTED
+
 example for multiple query strings in file:
-my_input   my_output    FILE    my_query   10000   100    PROC_01   LOOP_SINGLE
+ my_input   my_output    FILE    my_query  12000000  120    PROC_01   LOOP_SINGLE
 }}}
 
-with lactuca_big_gene_CDS.frgm.query file:
+== Alignment depth one letter code ==
 
-{{{
-bash-2.03$ tclsh8.4 seqexter_2010_03_08.tcl lactuca_IGA_reads_mRNASeq_test.seqs lactuca_IGA_reads_mRNASeq_test.seqs.out FILE lactuca_big_gene_CDS.frgm.query 10000   100    PROC_01   LOOP_SINGLE
-}}}
-
-or (with lactuca_SNPs_907_CDS.test.query test file):
-
-{{{
-tclsh8.4 seqexter_2010_03_08.tcl lactuca_IGA_reads_mRNASeq_test.seqs lactuca_IGA_reads_mRNASeq_test.seqs.snp FILE lactuca_SNPs_907_CDS.test.query 10000   100    PROC_01   LOOP_SINGLE
-}}}
-
-for these examples, the script reads short DNA fragments (Illumina GA sequences) from input file 'lactuca_IGA_reads_mRNASeq_test.seqs', loads these DNA fragments into computer memory, then it searches query strings in file(s) 'lactuca_big_gene_CDS.frgm.query' for perfect matches versus DNA IGA reads. Aligned results of search are written into '`*`.TrimL' and '`*`.TrimR' files. Consensus summary is written into '`*`.UniSeqs' file.
-
-example TrimL output and UniSeqs info:
-{{{
-009967  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGCCCAGTTGTAA-------------------------------------------------------    __3__
-012221  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGCCCAGTTGTAACAATCAAACGCAGTGCAGAAGAGACCCCTAATGATCCT-----------------    __3__
-012222  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGTCCAGTTGTAACAATCAAACGCAGTGCAGAAGAGACCCCTAATGAT--------------------    __3__
-012223  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGTCCAGTTGTAACAATCAAACGCAGTGCAGAAGAGACCCCTAATGATCCT-----------------    __3__
-027155  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGCCCAGTTGTAACAATCAAACGCAGTGCAGAAGAGACCCCTAATGATCCTG----------------    __3__
-031561  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGTCCAGTTGTAACAATCAAACGCAGTGCAGAAGA---------------------------------    __3__
-031581  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGCCCAGTTGTAACAA----------------------------------------------------    __3__
-031582  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGTCCAGTTGTAACAA----------------------------------------------------    __3__
-037273  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGCCCAGTTGTAACAATCAAACGCAGTGCAGAAGAGA-------------------------------    __3__
-037536  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGCCCAGTTGTAACAATC--------------------------------------------------    __3__
-037537  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGTCCAG-------------------------------------------------------------    __3__
-056967  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGCCCAGTTGTAACAATCAAACGCAGTGCAGAAGAGACCCCT--------------------------    __3__
-056968  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGTCCAGTTG----------------------------------------------------------    __3__
-056969  FRW     CTGTGAGTGAATTCTGTGTGAAGCACTGTGAATGTCCAGTTGTAACAATCAAACGCAG------------------------------------------    __3__
-                                                  ^
-__________________________________________________I_ putative SNP position 
-                                                  I
-                                                  V
-******  _A_     00000X000XX000000000XX00X00000XX00000X00000XX0XX00XXX000X0000X0XX0X0X000019X00X000003---------------
-******  _T_     0X0X000X000XX0X0X0X0000000X0X000X060000XX0X00000X000000000X00000000000000800X00X00905---------------
-******  _G_     00X0X0X0X000000X0X0X00X0000X0X000X0000X00X000000000000X00X0X00X00X0X000001100X00000X0---------------
-******  _C_     X000000000000X000000000X0X000000004XX00000000X000X000X0X0000X00000000XXXX0000000XX103---------------
-******  ALL     qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpppppppppppppoooooooooooooooonnnmmlkkkjjjjhfeddccbaaa4---------------
-(consensus stat info in *.UniSeqs file)
-}}}
+|| *depth* || *4L-code ||
+|| 1 || 1 ||
+|| 2 || 2 ||
+|| 3 || 3 ||
+|| 4 || 4 ||
+|| 5 || 5 ||
+|| 6 || 6 ||
+|| 7 || 7 ||
+|| 8 || 8 ||
+|| 9 || 9 ||
+|| 10 - 20 || a ||
+|| 20 - 30 || b ||
+|| 30 - 40 || c ||
+|| 40 - 50 || d ||
+|| 60 - 70 || e ||
+|| 80 - 90 || f ||
+|| 100 - 120 || g ||
+|| 120 - 140 || h ||
+||  ||  ||
+||  ||  ||
+||  ||  ||
+||  ||  ||
+||  ||  ||
+||  ||  ||
+||  ||  ||
+||  ||  ||
+||  ||  ||
+||  ||  ||
+||  ||  ||
+||  ||  ||
+||  ||  ||
+||  ||  ||
+||  ||  ||
+||  ||  ||
+||  ||  ||
+||  ||  ||
