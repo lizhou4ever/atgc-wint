@@ -11,9 +11,9 @@ You can setup and test an example SeqExter project using following steps:
 
 ----
 *1.* Download three input files from project's home page:
-Phytophthora_cinnamomi_IGA_Lib_Set_A.gz
-Phytophthora_cinnamomi_IGA_Lib_Set_B.gz
-Phytophthora_cinnamomi_IGA_Lib_Set_C.gz
+`Phytophthora_cinnamomi_IGA_Lib_Set_A.gz`
+`Phytophthora_cinnamomi_IGA_Lib_Set_B.gz`
+`Phytophthora_cinnamomi_IGA_Lib_Set_C.gz`
 
 ----
 *2.* Uncompress files with 'gunzip'
