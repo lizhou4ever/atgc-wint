@@ -3,4 +3,73 @@
 
 == Example SeqExter project to deduct consensus of abundant transposable elements in Phytophthora cinnamomi using Illumina genomic short reads ==
 
-Original source file (input data) Phytophthora_cinnamomi_library_SRR097634.HQ.seqs has 10,635,323 (10 million) short Illumina reads. 
+Source file (input data) Phytophthora_cinnamomi_library_SRR097634.HQ.seqs has 10,635,323 (10 million) short Illumina reads. 
+
+Original data, Phytophthora cinnamomi Illumina GA reads, are from the library SRX040426); NCBI GenBank reference http://www.ncbi.nlm.nih.gov/sra/SRX040426 [Phytophthora cinnamomi Project]
+
+You can setup and test an example SeqExter project using following steps:
+
+----
+*1.* Download three input files from project's home page:
+Phytophthora_cinnamomi_IGA_Lib_Set_A.gz
+Phytophthora_cinnamomi_IGA_Lib_Set_B.gz
+Phytophthora_cinnamomi_IGA_Lib_Set_C.gz
+
+----
+*2.* Uncompress files with 'gunzip'
+
+----
+*3.* Concatenate three subsets into one file:
+{{{
+cat Phytophthora_cinnamomi_IGA_Lib_Set_A Phytophthora_cinnamomi_IGA_Lib_Set_B Phytophthora_cinnamomi_IGA_Lib_Set_C > Phytophthora_cinnamomi_library_SRR097634.HQ.seqs
+}}}
+
+----
+*4.* Check number of sequences in Phytophthora_cinnamomi_library_SRR097634.HQ.seqs file:
+{{{
+wc -l Phytophthora_cinnamomi_library_SRR097634.HQ.seqs
+}}}
+(you should get 10635323 lines)
+
+----
+*5.* Run SeqExter with following options:
+{{{
+tclsh8.4 seqexter_2011_03_04_r41.tcl Phytophthora_cinnamomi_library_SRR097634.HQ.seqs Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGG.OUT STRING ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGG 12000000 75 PROC_01 LOOP_NESTED
+}}}
+
+where:
+
+tclsh8.4 seqexter_2011_03_04_r41.tcl - *PROGRAM TO RUN*
+
+Phytophthora_cinnamomi_library_SRR097634.HQ.seqs - *INPUT FILE*
+
+Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGG.OUT - *SET OF OUTPUT FILES*
+
+STRING ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGG - *FIRST SEARCH STRING*
+
+12000000 - *MAX NUMBER OF SEQUENCES TO LOAD*
+
+75 - *LENGTH OF ANALYZED ALIGNMENT*
+
+PROC_01 LOOP_NESTED - *NESTED SEARCH LOOP*
+
+*system requirements - 64 bit Linux/Unix system with tclsh interpreter; 16 Gb of RAM*
+
+----
+*6.* After ~1 hour seven output files will be generated:
+
+Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGGGA.OUT.Log
+
+Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGGGA.OUT.Search
+
+Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGGGA.OUT.Summary
+
+Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGGGA.OUT.TrimL
+
+Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGGGA.OUT.TrimR
+
+Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGGGA.OUT.UniSeqs
+
+Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGGGA.OUT.Xassy
+
+----
