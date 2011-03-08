@@ -58,18 +58,100 @@ PROC_01 LOOP_NESTED - *NESTED SEARCH LOOP*
 ----
 *6.* After ~1 hour seven output files will be generated:
 
-Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGGGA.OUT.Log
+Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGG.OUT.Log
 
-Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGGGA.OUT.Search
+Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGG.OUT.Search
 
-Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGGGA.OUT.Summary
+Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGG.OUT.Summary
 
-Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGGGA.OUT.TrimL
+Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGG.OUT.TrimL
 
-Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGGGA.OUT.TrimR
+Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGG.OUT.TrimR
 
-Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGGGA.OUT.UniSeqs
+Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGG.OUT.UniSeqs
 
-Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGGGA.OUT.Xassy
+Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGG.OUT.Xassy
+
+----
+
+*7.* Output analysis:
+
+Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGG.OUT.Xassy file
+
+{{{
+........        _A_     X00000000X0000X00XX00000000XX000000090000X000000XXX1X00000090000000XXX000X0     __1__
+........        _T_     0X0000X00000X0000000000X0X0000X00000009X000009000000009000000008X0000000900     __1__
+........        _G_     00XX0X00X0XX0X00X00XX0X0X00000000XXX1X10X00X00X000000X1X0XX10XX20X00000X100     __1__
+........        _C_     0000X00X0000000X00000X0000X00X0XX000000000X0X00X00090000X000X0000090009000X     __1__
+........        _N_     000000000000000000000000000000000000000000000000000000000000000000000000000     __1__
+........        ALL     wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwvuuuttssssrrqqpppoool     __1__
+********        ***     ***************************************************************************     __1__
+########        CNS     ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGGGaGtTGACGCtGCAAAcAGtGCGGaCGGtTGcAAAcGtAC     __1__
+########        QLT     XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX+X+XXXXXX+XXXXX+XX+XXXX+XXX+XX+XXX+X+XX     __1__
+
+
+
+>CONSENSUS__1__  Length: 75 [gain: 40]
+ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGGGAGTTGACGCTGCAAACAGTGCGGACGGTTGCAAACGTAC
+
+
+OLD KEY:   ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGG
+NEW KEY:   GACGCTGCAAACAGTGCGGACGGTTGCAAACGTAC
+
+........        _A_     0X000000XXX0X000000X0000000XXX000X0000X000X000XX00000X000000000009000000000     __2__
+........        _T_     00000X00000000X00000000XX0000000X0000000X0000000XXX000X00X0X00X000000000090     __2__
+........        _G_     X00X00X000000X0X0XX00XX00X00000X0000X0000X00X000000X000X00X00X0X00X009XX009     __2__
+........        _C_     00X0X00X000X0000X000X00000X000X000XX0X0X000X0X000000X000X000X000X00X9100910     __2__
+........        _N_     000000000000000000000000000000000000000000000000000000000000000000000000000     __2__
+........        ALL     wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwvvvuutssrrrqqppooomkh     __2__
+********        ***     ***************************************************************************     __2__
+########        CNS     GACGCTGCAAACAGTGCGGACGGTTGCAAACGTACCGCACTGACGCAATTTGCATGCTGTCGTGCaGCcgGGctg     __2__
+########        QLT     XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX+XX++XX+++     __2__
+
+
+
+>CONSENSUS__2__  Length: 115 [gain: 40]
+ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGGGAGTTGACGCTGCAAACAGTGCGGACGGTTGCAAACGTACCGCACTGACGCAATTTGCATGCTGTCGTGCAGCCGGGCTG
+
+
+OLD KEY:   GACGCTGCAAACAGTGCGGACGGTTGCAAACGTAC
+NEW KEY:   TGACGCAATTTGCATGCTGTCGTGCAGCCGGGCTG
+
+... ... ... 
+
+OLD KEY:   CCGGTCCGCGATCTCGGACGCGGACGGCATCCATG
+NEW KEY:   TCGGACGCGGACGGCATCCATGGATCGCGCGCCGC
+
+........        _A_     0000X00000X0000X000X000X00000000000300010410000000202000000200000074X207100     __122__
+........        _T_     X000000000000000X000X000X00000000000001000000000000000001801004996100700000     __122__
+........        _G_     00XX00X0XX00XX0000000XX000X0X0X00X027829119191919X8X89601096962113210101020     __122__
+........        _C_     0X000X0X000X00X00XX000000X0X0X0XX0X52271951919191100114X82111531010500X298X     __122__
+........        _N_     000000000000000000000000000000000000000000000000000000000000000000000000000     __122__
+........        ALL     fffffffffffffffffffffffffffffffffffeeeeeeeedddddddddccccccbbbbaaaaaaaaa9754     __122__
+********        ***     ***************************************************************************     __122__
+########        CNS     TCGGACGCGGACGGCATCCATGGATCGCGCGCCGCcggcgccgcgcgcgGgGgggCctgggcntttacAtCaccC     __122__
+########        QLT     XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX?@+@++?+++++++X+X++!X+++!+!-++!@?X@X-++X     __122__
+
+... ... ...
+
+OLD KEY:   TCGGACGCGGACGGCATCCATGGATCGCGCGCCGC
+NEW KEY:   CGCGCCGCCGGCGCCGCGCGCGGGGGGGCCTGGGC
+
+........        _A_     ---------------------------------------------------------------------------     __123__
+........        _T_     ---------------------------------------------------------------------------     __123__
+........        _G_     ---------------------------------------------------------------------------     __123__
+........        _C_     ---------------------------------------------------------------------------     __123__
+........        _N_     ---------------------------------------------------------------------------     __123__
+........        ALL     ---------------------------------------------------------------------------     __123__
+********        ***     ***************************************************************************     __123__
+########        CNS     ---------------------------------------------------------------------------     __123__
+########        QLT     ...........................................................................     __123__
+
+
+
+OLD KEY:   CGCGCCGCCGGCGCCGCGCGCGGGGGGGCCTGGGC
+NEW KEY:   NO_NEW_KEY_FOUND
+
+}}}
 
 ----
