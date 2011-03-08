@@ -7,6 +7,8 @@ Source file (input data) Phytophthora_cinnamomi_library_SRR097634.HQ.seqs has 10
 
 Original data, Phytophthora cinnamomi Illumina GA reads, are from the library SRX040426; NCBI GenBank reference [http://www.ncbi.nlm.nih.gov/sra/SRX040426] (Phytophthora cinnamomi Project)
 
+----
+
 You can setup and test an example SeqExter project using following steps:
 
 ----
