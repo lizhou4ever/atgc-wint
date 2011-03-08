@@ -215,6 +215,6 @@ Query  1   GCGTCGAGGTGACGAAGGCGTGTCAACTCCGGGAGT  36
 Sbjct  3   GCGTCGAGGTGAAGATGGCGTGTCGACTCCGGGAGT  38
 }}}
 
-[http://www.ncbi.nlm.nih.gov/nucleotide/110294159] was BLAST-ed against Phytophthora cinnamomi library (10,635,323 sequences), and ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGG was selected as the key after several trials.
+Highly redundant subset of Phytophthora cinnamomi library was BLAST-ed against known transposon sequence [http://www.ncbi.nlm.nih.gov/nucleotide/110294159], and ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGG was selected as the first key after several trials.
 
 ----
