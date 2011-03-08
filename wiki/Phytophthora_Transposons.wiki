@@ -45,7 +45,7 @@ Phytophthora_cinnamomi_library_SRR097634.HQ.seqs - *INPUT FILE*
 
 Phytophthora_cinnamomi_library_Z.ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGG.OUT - *SET OF OUTPUT FILES*
 
-STRING ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGG - *FIRST SEARCH STRING*
+STRING ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGG - *FIRST SEARCH STRING (ORIGINAL KEY)*
 
 12000000 - *MAX NUMBER OF SEQUENCES TO LOAD*
 
@@ -193,5 +193,27 @@ CATACGTACAGCGGCACCTCATTCGGAGGTACCGAGTTCCCATACCGGTCCGCGATCTCGGACGCGGACGGCATCCATGG
 *9.* You can BLAST the consensus at NCBI to find out similar DNA (Blast-N) and protein (Blast-X) sequences
 
 [http://blast.ncbi.nlm.nih.gov/]
+
+----
+
+*10.* Note about selection of the first search key.
+
+For this particular project the first search key was selected based on similarity to known transposon sequence:
+
+{{{
+>gb|DQ645741.1|  Phytophthora sojae transposon GypsyPs-2 reverse transcriptase 
+gene, partial cds
+Length=1446
+
+ Score = 48.1 bits (24),  Expect = 0.002
+ Identities = 33/36 (92%), Gaps = 0/36 (0%)
+ Strand=Plus/Plus
+
+Query  1   GCGTCGAGGTGACGAAGGCGTGTCAACTCCGGGAGT  36
+           |||||||||||| || |||||||| |||||||||||
+Sbjct  3   GCGTCGAGGTGAAGATGGCGTGTCGACTCCGGGAGT  38
+}}}
+
+[http://www.ncbi.nlm.nih.gov/nucleotide/110294159] was BLAST-ed against Phytophthora cinnamomi library (10,635,323 sequences), and ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGG was selected as the key after several trials.
 
 ----
