@@ -75,7 +75,6 @@ proc Set_Global_Parameters { query_input } {
 	}
 	if { $query_type == "FILE"} {
 		set query_file   $query_input
-		# set query_string "___none___"
 		set query_string ""
 	}
 	
@@ -93,9 +92,7 @@ proc Set_Global_Parameters { query_input } {
 	
 	set sleep_time 360 
 	
-	### set max_seqs_number 120000000		; # one hundred twenty million : 120M
-	
-	set max_search_cycle 10000			; # ten thousand : 10K
+	set max_search_cycle 100000			; # one hundred thousand : 100K
 	
 }
 
@@ -259,8 +256,6 @@ proc Set_Initial_Time { } {
 	set log_message "----------------------------------------------"
 	Print_Log_Message $log_message
 	
-	after $sleep_time
-	
 }
 
 proc Check_Current_Time { } {
@@ -303,9 +298,6 @@ proc Create_Query_Data_Array { q current_query } {
 	set query_array($q) $current_query
 	set max_query_item $q
 	
-	# set log_message " $q query strings processed "
-	# Print_Log_Message $log_message
-	
 }
 
 proc Open_Files { input_file file_out_base } {
@@ -321,7 +313,7 @@ proc Open_Files { input_file file_out_base } {
 	global file_out5	; # output file 5 - alignment data per iteration
 	global file_out6	; # output file 6 - assembled consensus
 	global file_out7	; # output file 7 - aligned tails on both sides of the extensions
-	global file_out8	; # output file 8 - FASTA file with tail extensions
+	global file_out8	; # output file 8 - tab-delimited file with tail extensions
 	
 	set file_name_0 $file_out_base\.Log
 	set file_name_1 $file_out_base\.Search
@@ -331,7 +323,7 @@ proc Open_Files { input_file file_out_base } {
 	set file_name_5 $file_out_base\.UniSeqs
 	set file_name_6 $file_out_base\.Xassy
 	set file_name_7 $file_out_base\.Tails
-	set file_name_8 $file_out_base\.Tails.fa
+	set file_name_8 $file_out_base\.Tails\.tab
 	
 	set file_in_1 [open $input_file  "r"]
 	set file_out0 [open $file_name_0 "w"]
@@ -447,7 +439,6 @@ proc Check_StdIn_Data { } {
 		Read_Query_String
 	} elseif { $live_string == "Proc_01" } {
 		puts " Proc_01 "
-		### Run_String_Analysis_01
 		Run_Proc_01
 		Read_StdIn_Data
 	} elseif { $live_string == "Proc_02" } {
@@ -565,10 +556,8 @@ proc Start_New_Seqexter_Loop { } {
 
 	if { $new_seqs_key != "NO_NEW_KEY_FOUND" && $new_seqs_key != "DUPLICATION_FOUND" } {
 		set query_string $new_seqs_key
-		### Run_Proc_01
 	}
 	if { $new_seqs_key == "NO_NEW_KEY_FOUND" || $new_seqs_key == "DUPLICATION_FOUND" } {
-		### break
 		New_Key_Loop_Terminator
 	}
 }
@@ -591,12 +580,16 @@ proc Print_Alignment_Data_in_File { current_consensus_L current_consensus_R quer
 	global consensus_slist_TrimL
 	global consensus_slist_TrimR
 	
-	set dummy_id_len [string length $max_array_item]
-	set dummy_id   [string repeat "." $dummy_id_len]
-	set dummy_star [string repeat "*" $dummy_id_len]
-	set dummy_cons [string repeat "#" $dummy_id_len]
-	set dummy_seqs [string repeat "*" $max_align_length]
-	set dummy_key  [string repeat "^" $query_length]
+	### KEY HIGHLIGHT IN ALIGNMENT ###
+	set key_start_pos [expr $max_align_length - $query_length -1]
+	
+	set dummy_id_len  [string length $max_array_item]
+	set dummy_id      [string repeat "." $dummy_id_len]
+	set dummy_star    [string repeat "*" $dummy_id_len]
+	set dummy_cons    [string repeat "#" $dummy_id_len]
+	set dummy_seqs    [string repeat "*" $max_align_length]
+	set dummy_seqs_T  [string range $dummy_seqs 0 $key_start_pos]
+	set dummy_key     [string repeat "^" $query_length]
 	
 	### ONLY LEFT-TRIM ALIGNMENT IS USED FOR SEQUENCE WALKING ###
 	puts "   LEFT-TRIM ALIGNMENT   "
@@ -625,7 +618,7 @@ proc Print_Alignment_Data_in_File { current_consensus_L current_consensus_R quer
 	set data_C_  "$dummy_id\t_C_\t$fract_C_string_L\t$query_index_string" 
 	set data_N_  "$dummy_id\t_N_\t$fract_N_string_L\t$query_index_string" 
 	set data_all "$dummy_id\tALL\t$all_ATGC_count_L\t$query_index_string" 
-	set data_S_  "$dummy_star\t***\t$dummy_seqs\t$query_index_string"
+	set data_S_  "$dummy_star\t***\t$dummy_key$dummy_seqs_T\t$query_index_string"
 	set data_con "$dummy_cons\tCNS\t$atgc_Consensus_L\t$query_index_string"
 	set data_Q_  "$dummy_cons\tQLT\t$atgc_Quality_L\t$query_index_string"
 	
@@ -672,8 +665,6 @@ proc Print_Alignment_Data_in_File { current_consensus_L current_consensus_R quer
 	set atgc_Consensus_R [lindex $current_consensus_R 6]
 	set atgc_Quality_R   [lindex $current_consensus_R 7]
 	
-	set key_start_pos [expr $max_align_length - $query_length -1]
-	
 	set fract_A_string_T [string range $fract_A_string_R 0 $key_start_pos]
 	set fract_T_string_T [string range $fract_T_string_R 0 $key_start_pos]
 	set fract_G_string_T [string range $fract_G_string_R 0 $key_start_pos]
@@ -682,7 +673,6 @@ proc Print_Alignment_Data_in_File { current_consensus_L current_consensus_R quer
 	set all_ATGC_count_T [string range $all_ATGC_count_R 0 $key_start_pos]
 	set atgc_Consensus_T [string range $atgc_Consensus_R 0 $key_start_pos]
 	set atgc_Quality_T   [string range $atgc_Quality_R   0 $key_start_pos]
-	set dummy_seqs_T     [string range $dummy_seqs   0 $key_start_pos]
 	
 	set tdata_A_  "$dummy_id\t_A_\t$fract_A_string_T$fract_A_string_L\t$query_index_string" 
 	set tdata_T_  "$dummy_id\t_T_\t$fract_T_string_T$fract_T_string_L\t$query_index_string" 
@@ -706,8 +696,9 @@ proc Print_Alignment_Data_in_File { current_consensus_L current_consensus_R quer
 	puts $file_out7 ""
 	puts $file_out7 ""
 	
-	puts $file_out8 ">$query_index_string"
-	puts $file_out8 $tdata_con
+	puts -nonewline $file_out8 "$query_index_string\t"
+	puts -nonewline $file_out8 "$atgc_Consensus_T$atgc_Consensus_L\t"
+	puts $file_out8             $atgc_Quality_T$atgc_Quality_L
 	
 }
 
@@ -735,10 +726,8 @@ proc Process_Consensus { query_length } {
 	global file_out6
 	global consensus_slist_TrimL
 	global consensus_slist_TrimR
-	global max_array_item
 	global query_count
 	global query_string
-	global max_align_length
 	global new_seqs_key
 	global upper_case
 	global loop_status
@@ -826,10 +815,9 @@ proc Process_Consensus { query_length } {
 		}
 		
 		puts $file_out6 "                        "
-		### puts $file_out6 "OLD KEY:   $query_string"
 		puts $file_out6 "OLD KEY:   $old_key_string_frw"
 		puts $file_out6 "NEW KEY:   $new_seqs_key"
-		puts $file_out6 "     "
+		puts $file_out6 "                        "
 	}
 }
 
@@ -837,6 +825,14 @@ proc Alignment_Analysis { current_alignment query_length } {
 	
 	global max_align_length
 	global consensus_array_Count
+	
+	####################    DEPTH CUTOFF VALUES    #################
+	# FLEXIBLE PARAMETERS - CAN BE ADJUSTED FOR PARTICULAR PROJECT #
+	set depth_cut_050 10
+	set depth_cut_060 10
+	set depth_cut_070 10
+	set depth_cut_080  3
+	set depth_cut_100  3
 	
 	### SET ZERO VALUES FOR ALL ALIGNMENT POSITIONS ###
 	set p 0 		; # position on the alignment
@@ -854,11 +850,9 @@ proc Alignment_Analysis { current_alignment query_length } {
 	while { $s < $consensus_array_Count } {
 		set current_data [lindex $current_alignment $s]
 		set current_seqs [lindex [split $current_data "\t"] 2]
-		### puts $current_seqs
 		set p 0 
 		while { $p < $max_align_length } {
 			set current_item [string index $current_seqs $p]
-			### puts $current_item
 			if { $current_item == "A" } {
 				incr count_A_items($p)
 				incr count_all_chr($p)
@@ -932,72 +926,72 @@ proc Alignment_Analysis { current_alignment query_length } {
 			####### CONSENSUS QUALITY ######
 			
 			### MAYBE 50% AND HIGHER ###
-			if { $fract_A >= 5 && $count_all_chr($p) >= 10 } {
+			if { $fract_A >= 5 && $count_all_chr($p) >= $depth_cut_050 } {
 				set cons_ql "?"
 			}
-			if { $fract_T >= 5 && $count_all_chr($p) >= 10 } {
+			if { $fract_T >= 5 && $count_all_chr($p) >= $depth_cut_050 } {
 				set cons_ql "?"
 			}
-			if { $fract_G >= 5 && $count_all_chr($p) >= 10 } {
+			if { $fract_G >= 5 && $count_all_chr($p) >= $depth_cut_050 } {
 				set cons_ql "?"
 			}
-			if { $fract_C >= 5 && $count_all_chr($p) >= 10 } {
+			if { $fract_C >= 5 && $count_all_chr($p) >= $depth_cut_050 } {
 				set cons_ql "?"
 			}
 			
 			### WEAK 60% AND HIGHER ###
-			if { $fract_A >= 6 && $count_all_chr($p) >= 10 } {
+			if { $fract_A >= 6 && $count_all_chr($p) >= $depth_cut_060 } {
 				set cons_ql "!"
 			}
-			if { $fract_T >= 6 && $count_all_chr($p) >= 10 } {
+			if { $fract_T >= 6 && $count_all_chr($p) >= $depth_cut_060 } {
 				set cons_ql "!"
 			}
-			if { $fract_G >= 6 && $count_all_chr($p) >= 10 } {
+			if { $fract_G >= 6 && $count_all_chr($p) >= $depth_cut_060 } {
 				set cons_ql "!"
 			}
-			if { $fract_C >= 6 && $count_all_chr($p) >= 10 } {
+			if { $fract_C >= 6 && $count_all_chr($p) >= $depth_cut_060 } {
 				set cons_ql "!"
 			}
 			
 			### MEDIUM 70% AND HIGHER ###
-			if { $fract_A >= 7 && $count_all_chr($p) >= 10 } {
+			if { $fract_A >= 7 && $count_all_chr($p) >= $depth_cut_070 } {
 				set cons_ql "@"
 			}
-			if { $fract_T >= 7 && $count_all_chr($p) >= 10 } {
+			if { $fract_T >= 7 && $count_all_chr($p) >= $depth_cut_070 } {
 				set cons_ql "@"
 			}
-			if { $fract_G >= 7 && $count_all_chr($p) >= 10 } {
+			if { $fract_G >= 7 && $count_all_chr($p) >= $depth_cut_070 } {
 				set cons_ql "@"
 			}
-			if { $fract_C >= 7 && $count_all_chr($p) >= 10 } {
+			if { $fract_C >= 7 && $count_all_chr($p) >= $depth_cut_070 } {
 				set cons_ql "@"
 			}
 			
 			### STRINGENT 80% AND HIGHER ###
-			if { $fract_A >= 8 && $count_all_chr($p) >= 3 } {
+			if { $fract_A >= 8 && $count_all_chr($p) >= $depth_cut_080 } {
 				set cons_ql "+"
 			}
-			if { $fract_T >= 8 && $count_all_chr($p) >= 3 } {
+			if { $fract_T >= 8 && $count_all_chr($p) >= $depth_cut_080 } {
 				set cons_ql "+"
 			}
-			if { $fract_G >= 8 && $count_all_chr($p) >= 3 } {
+			if { $fract_G >= 8 && $count_all_chr($p) >= $depth_cut_080 } {
 				set cons_ql "+"
 			}
-			if { $fract_C >= 8 && $count_all_chr($p) >= 3 } {
+			if { $fract_C >= 8 && $count_all_chr($p) >= $depth_cut_080 } {
 				set cons_ql "+"
 			}
 			
-			### CONFIDENT 90% AND HIGHER ###
-			if { $fract_A == 10 && $count_all_chr($p) >= 3 } {
+			######## CONFIDENT 100% ########
+			if { $fract_A == 10 && $count_all_chr($p) >= $depth_cut_100 } {
 				set cons_ql "X"
 			}
-			if { $fract_T == 10 && $count_all_chr($p) >= 3 } {
+			if { $fract_T == 10 && $count_all_chr($p) >= $depth_cut_100 } {
 				set cons_ql "X"
 			}
-			if { $fract_G == 10 && $count_all_chr($p) >= 3 } {
+			if { $fract_G == 10 && $count_all_chr($p) >= $depth_cut_100 } {
 				set cons_ql "X"
 			}
-			if { $fract_C == 10 && $count_all_chr($p) >= 3 } {
+			if { $fract_C == 10 && $count_all_chr($p) >= $depth_cut_100 } {
 				set cons_ql "X"
 			}
 			
@@ -1167,10 +1161,6 @@ proc Reverse_Complement_String { string_frw } {
 	}
 	
 	set string_rev_compl [string map { A T G C C G T A } $string_rev]
-	
-	# puts $string_frw				; # Degugging
-	# puts $string_rev_compl		; # Debugging
-	# after $sleep_time				; # Debugging
 	return $string_rev_compl
 	
 }
@@ -1260,13 +1250,6 @@ proc Run_String_Analysis_01 { } {
 	Print_Log_Message $log_message
 	Print_Query_Data_Log $log_message
 	
-	after $sleep_time
-	
-	### if { $interactive_mode == "TRUE" } { }
-	### 	Read_StdIn_Data
-	### 	break
-	### { }
-	
 }
 
 proc Print_Query_Sumary { query_summary_log } {
@@ -1349,7 +1332,6 @@ proc Print_Left_Alignment  { q } {
 	set trimL_query_slist [lsort $trimL_query_slist]
 	foreach item $trimL_query_slist {
 		puts $file_out2 $item
-		### puts $item
 	}
 	
 	puts $file_out2 "************************************************"
@@ -1364,7 +1346,6 @@ proc Print_Right_Alignment { q } {
 	set trimR_query_slist [lsort $trimR_query_slist]
 	foreach item $trimR_query_slist {
 		puts $file_out3 $item
-		### puts $item
 	}
 	
 	puts $file_out3 "************************************************"
@@ -1381,8 +1362,6 @@ proc Format_Key_Value { i } {
 	while { $id_len < $max_id_len } {
 		set id "0$id"
 		set id_len [string length $id]
-		# puts $id;			Debugging
-		# puts $id_len;		Debugging
 	}
 	
 	return $id
