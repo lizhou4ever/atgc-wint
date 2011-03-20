@@ -34,11 +34,13 @@ proc Set_Global_Parameters { query_input } {
 	global dna_string_direction	; # direction of DNA string - FORWARD or REVERSE
 	global interactive_mode		; # interactive or command line query input
 	global initial_time			; # program start time
+	global index_fasta_file		; # FASTA file with indexed IDs - TRUE or FALSE
 	global live_string			; # inpuit stdin
 	global loop_status			; # multiple or single iteration
 	global max_align_length		; # alignment length - temporary solution
 	global max_align_index		; # it is expr max_align_length - 1
 	global max_array_item		; # size of the array with strings from input file
+	global max_fasta_id_len		; # max FASTA ID length
 	global max_query_item		; # size of the array with query strings
 	global max_search_cycle		; # max number of search cycles
 	global max_seqs_number		; # max number of sequences to load into memory
@@ -93,6 +95,12 @@ proc Set_Global_Parameters { query_input } {
 	set sleep_time 360 
 	
 	set max_search_cycle 100000			; # one hundred thousand : 100K
+	
+	set index_fasta_file "FALSE"
+	# set index_fasta_file "TRUE"
+	if { $index_fasta_file == "TRUE" } {
+		set max_fasta_id_len [string length $max_seqs_number]
+	}
 	
 }
 
@@ -303,6 +311,7 @@ proc Create_Query_Data_Array { q current_query } {
 proc Open_Files { input_file file_out_base } {
 	
 	global proc_id
+	global index_fasta_file
 	
 	global file_in_1	; # input file channel
 	global file_out0	; # log file channel
@@ -314,6 +323,7 @@ proc Open_Files { input_file file_out_base } {
 	global file_out6	; # output file 6 - assembled consensus
 	global file_out7	; # output file 7 - aligned tails on both sides of the extensions
 	global file_out8	; # output file 8 - tab-delimited file with tail extensions
+	global file_out9	; # indexed FASTA file
 	
 	set file_name_0 $file_out_base\.Log
 	set file_name_1 $file_out_base\.Search
@@ -336,6 +346,11 @@ proc Open_Files { input_file file_out_base } {
 	set file_out7 [open $file_name_7 "w"]
 	set file_out8 [open $file_name_8 "w"]
 	
+	if { $index_fasta_file == "TRUE" } {
+		set file_name_9 $file_out_base\.Index\.fa
+		set file_out9 [open $file_name_9 "w"]
+	}
+	
 }
 
 proc Read_Input_File { } {
@@ -345,6 +360,7 @@ proc Read_Input_File { } {
 	global mod_value
 	global upper_case
 	global max_seqs_number
+	global index_fasta_file
 	
 	set l 0 
 	set n 0 
@@ -371,6 +387,10 @@ proc Read_Input_File { } {
 			}
 			
 			Create_Basic_Data_Array $n $current_data
+			
+			if { $index_fasta_file == "TRUE" } {
+				Fasta_Indexed_File $n $current_data
+			}
 			
 		}
 	}
@@ -1352,6 +1372,24 @@ proc Print_Right_Alignment { q } {
 	
 }
 
+proc Fasta_Indexed_File { n current_data } {
+	
+	global file_out9
+	global max_fasta_id_len
+	
+	set id $n
+	set id_len [string length $id]
+	while { $id_len < $max_fasta_id_len } {
+		set id "0$id"
+		set id_len [string length $id]
+	}
+	
+	puts $file_out9 ">$id "
+	puts $file_out9 $current_data
+	
+	
+}
+
 proc Format_Key_Value { i } {
 	
 	global max_array_item
@@ -1408,6 +1446,9 @@ proc Close_Files { } {
 	global file_out6
 	global file_out7
 	global file_out8
+	global file_out9
+	
+	global index_fasta_file
 	
 	close $file_in_1
 	close $file_out0
@@ -1419,6 +1460,10 @@ proc Close_Files { } {
 	close $file_out6
 	close $file_out7
 	close $file_out8
+	
+	if { $index_fasta_file == "TRUE" } {
+		close $file_out9
+	}
 	
 }
 
