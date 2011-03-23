@@ -1,7 +1,7 @@
 #labels Featured
 #Phytophthora Transposons
 
-== Example SeqExter project to deduct consensus of abundant transposable elements in Phytophthora cinnamomi using Illumina genomic short reads ==
+== SeqExter example project to deduct consensus of abundant transposable elements in Phytophthora cinnamomi using Illumina genomic short reads ==
 
 Phytophthora_cinnamomi_library_SRR097634.10M.seqs has 10,000,000 (10 million) short Illumina reads. 
 
