@@ -583,7 +583,29 @@ proc Start_New_Seqexter_Loop { } {
 }
 
 proc New_Key_Loop_Terminator { } {
+	
+	global file_out6
+	global consensus_chain
+	
+	set final_consensus_frw $consensus_chain
+	set final_consensus_rev [Reverse_Complement_String $final_consensus_frw]
+	
+	set final_consensus_len_f [string length $final_consensus_frw]
+	set final_consensus_len_r [string length $final_consensus_rev]
+	
+	puts $file_out6 ""
+	puts $file_out6 ">FINAL_CONS_FRW  L:$final_consensus_len_f "
+	puts $file_out6 $final_consensus_frw
+	puts $file_out6 ""
+	puts $file_out6 ">FINAL_CONS_REV  L:$final_consensus_len_r "
+	puts $file_out6 $final_consensus_rev
+	puts $file_out6 ""
+	
+	puts "              "
+	puts "**************"
 	puts " ... EXIT ... "
+	puts "**************"
+	puts "              "
 	exit
 }
 
@@ -647,7 +669,7 @@ proc Print_Alignment_Data_in_File { current_consensus_L current_consensus_R quer
 	puts  $data_G_
 	puts  $data_C_
 	puts  $data_N_
-	puts  data_all
+	puts  $data_all
 	puts  $data_S_
 	puts  $data_con
 	puts  $data_Q_
