@@ -110,3 +110,15 @@ NEW KEY:   TCGGACGCGGACGGCATCCATGGATCGCGCGCCGC
 || 0.5 <= IDNT|| 10 || ? ||
 || 0.5 > IDNT || 1 || - ||
 || NO DATA || - || . ||
+
+== SeqExter output files ==
+
+  *. out.Log – log file with run progress info (number of items, time, search status)
+  * .out.Search – complete list of all items (strings) found upon search
+  * .out.Summary – count of all perfect matches per iteration (search)
+  * .out.Tails – two-sided extended consensus with detailed depth and quality info
+  * .out.Tails.tab - two-sided extended consensus in tab-delimited format
+  * .out.TrimL – alignment trimmed at left side
+  * .out.TrimR – alignment trimmed at right side
+  * .out.UniSeqs – consensus based on the analysis of left-trimmed alignment (processed TrimL data)
+  * .out.Xassy – summary of all generated consensuses on UniSeqs file
