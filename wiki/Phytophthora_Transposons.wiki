@@ -56,7 +56,7 @@ STRING ATGGCGTCGAGGTGACGAAGGCGTGTCAACTCCGG - *FIRST SEARCH STRING (ORIGINAL KEY)
 
 PROC_01 LOOP_NESTED - *NESTED SEARCH LOOP*
 
-*system requirements - 64 bit Linux/Unix system with tclsh interpreter; 16 Gb of RAM*
+*system requirements - 64 bit Linux/Unix system with tclsh interpreter; 12 GB of RAM*
 
 ----
 *6.* After ~1 hour nine output files will be generated:
