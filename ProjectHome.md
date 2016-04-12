@@ -1,0 +1,1 @@
+manipulation with text files in interactive mode, string processing and analysis - (bio)informatics oriented project - DNA assembly and alignment
